@@ -1,0 +1,22 @@
+# AI Fitness Trainer - Dependencies
+
+# Web Framework
+Flask
+Flask-CORS
+
+# Computer Vision and AI
+opencv-python
+mediapipe
+numpy
+
+# Data Processing and Visualization
+pandas
+matplotlib
+Pillow
+
+# Utilities
+python-dotenv
+
+# ML
+scikit-learn
+joblib

@@ -1,0 +1,132 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+html {}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse-soft {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Import Montserrat from Google Fonts */
+
+
+/* Font Setup */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* scroll-behavior: smooth; Avoid conflict via duplicate */
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  /* Paragraph text */
+  color: #020000;
+  background-color: #ffffff;
+  line-height: 1.7;
+  margin: 0;
+  padding: 0;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+:root.dark body {
+  background-color: #0f172a;
+  /* sw-slate-950 equivalent or similar */
+  color: #f1f5f9;
+  /* sw-slate-100 equivalent */
+}
+
+h1 {
+  font-family: 'Outfit', sans-serif;
+  /* Main Heading */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h2,
+h3 {
+  font-family: 'Outfit', sans-serif;
+  /* Subheadings */
+  font-weight: 650;
+}
+
+/* Accessibility improvements */
+:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
