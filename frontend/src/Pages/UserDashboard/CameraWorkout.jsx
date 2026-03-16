@@ -17,7 +17,8 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
     const [showReport, setShowReport] = useState(false);
     const [reportData, setReportData] = useState(null);
 
-    // Fetch Exercises on Mount
+    // Internal state to track previous reps to detect increments
+    const [prevRepCount, setPrevRepCount] = useState(0);
     useEffect(() => {
         const fetchExercises = async () => {
             try {
@@ -49,6 +50,7 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
             const data = await response.json();
             if (data.status === 'success') {
                 setSessionActive(true);
+                setPrevRepCount(0); // reset tracking state
             }
         } catch (error) {
             console.error("Failed to start session:", error);
@@ -64,6 +66,7 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
             if (data.status === 'success') {
                 setSessionActive(false);
                 setReportData(data.report);
+
                 playBeep('complete');
                 setShowReport(true);
 
@@ -105,6 +108,12 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
                     }
                     if (data.alerts) {
                         setAlerts(data.alerts);
+                        // Simple heuristic: count current active alerts as errors for this poll if there are any new ones (approximate)
+                    }
+
+                    // Internal rep tracking update
+                    if (data.repetitions > prevRepCount && selectedExercise) {
+                        setPrevRepCount(data.repetitions);
                     }
                 }
             } catch (error) {
@@ -113,7 +122,7 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
         }, 500);
 
         return () => clearInterval(interval);
-    }, [sessionActive]);
+    }, [sessionActive, prevRepCount, selectedExercise]);
 
     // Sound and Visual effects when reps increase
     useEffect(() => {

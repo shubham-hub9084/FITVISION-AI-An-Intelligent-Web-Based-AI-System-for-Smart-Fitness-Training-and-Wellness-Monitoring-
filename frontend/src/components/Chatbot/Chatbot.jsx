@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getGeminiResponse } from '../../services/aiService';
 import { Bot, Send, X, MessageSquare, Sparkles, User } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -136,7 +138,15 @@ const Chatbot = () => {
                                                 : "bg-emerald-500/20 text-white border border-emerald-500/30 self-end"
                                         )}>
                                             {msg.sender === 'bot' && <Sparkles className="w-4 h-4 mt-1 text-emerald-400 shrink-0" />}
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                                            <div className="text-sm leading-relaxed overflow-hidden break-words prose prose-invert max-w-none prose-p:leading-snug prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-a:text-emerald-400">
+                                                {msg.sender === 'bot' ? (
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                        {msg.text}
+                                                    </ReactMarkdown>
+                                                ) : (
+                                                    <span className="whitespace-pre-wrap break-words">{msg.text}</span>
+                                                )}
+                                            </div>
                                             {msg.sender === 'user' && <User className="w-4 h-4 mt-1 text-emerald-400 shrink-0" />}
                                         </div>
                                     </motion.div>

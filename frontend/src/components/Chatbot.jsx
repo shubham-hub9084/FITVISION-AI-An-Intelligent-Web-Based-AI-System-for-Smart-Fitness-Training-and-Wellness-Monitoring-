@@ -29,7 +29,7 @@ const Chatbot = () => {
 
         try {
             const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const result = await model.generateContent(input);
             const response = await result.response;
@@ -82,8 +82,8 @@ const Chatbot = () => {
                             >
                                 <div
                                     className={`max-w-[80%] p-3 rounded-2xl shadow-sm text-sm ${msg.sender === "user"
-                                            ? "bg-blue-600 text-white rounded-br-none"
-                                            : "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-100 dark:border-gray-600"
+                                        ? "bg-blue-600 text-white rounded-br-none"
+                                        : "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-100 dark:border-gray-600"
                                         }`}
                                 >
                                     {/* Basic Markdown rendering for bolding could be added here if needed, for now just text */}

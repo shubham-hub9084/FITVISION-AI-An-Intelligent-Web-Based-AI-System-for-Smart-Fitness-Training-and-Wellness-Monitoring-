@@ -6,7 +6,7 @@ export const GOALS = [
         description: 'Build lean muscle mass with high protein and calorie surplus',
         color: 'blue',
         surplus: 400,
-        macros: { p: 0.30, c: 0.50, f: 0.20 }
+        macros: { p: 0.30, c: 0.45, f: 0.25 }
     },
     {
         id: 'healthy-weight',
@@ -15,7 +15,7 @@ export const GOALS = [
         description: 'Maintain optimal weight with balanced nutrition',
         color: 'emerald',
         surplus: 0,
-        macros: { p: 0.25, c: 0.50, f: 0.25 }
+        macros: { p: 0.25, c: 0.45, f: 0.30 }
     },
     {
         id: 'lose-weight',
@@ -24,7 +24,7 @@ export const GOALS = [
         description: 'Burn fat with a sustainable calorie deficit',
         color: 'orange',
         surplus: -400,
-        macros: { p: 0.35, c: 0.35, f: 0.30 }
+        macros: { p: 0.32, c: 0.33, f: 0.35 }
     }
 ];
 
@@ -38,99 +38,510 @@ export const DIET_TYPES = [
     { id: 'vegetarian', name: 'Vegetarian' },
     { id: 'vegan', name: 'Vegan' },
     { id: 'eggetarian', name: 'Eggetarian' },
-    { id: 'non-veg', name: 'Non-Vegetarian' },
-    { id: 'high-protein', name: 'High Protein' },
-    { id: 'low-carb', name: 'Low Carb' },
-    { id: 'keto', name: 'Keto' }
+    { id: 'nonVeg', name: 'Non-Vegetarian' },
+    { id: 'highProtein', name: 'High Protein' },
+    { id: 'lowCarb', name: 'Low Carb' },
+    { id: 'keto', name: 'Keto' },
+    { id: 'omitNuts', name: 'Nut Free' }
 ];
 
-/**
- * FOOD_CALORIES
- * Values are either:
- *  - calories per serving (labelled in comment) OR
- *  - calories per 100g (when noted)
- *
- * Use consistent units in UI: show 'per serving' or 'per 100g' as provided.
- */
-export const FOOD_CALORIES = {
-    // Proteins (common units)
-    "Lentils (Dal)": 230,          // per cooked cup (~200g)
-    "Chickpeas (Chana)": 270,      // per cooked cup (~200g)
-    "Black Beans (Rajma)": 227,    // per cooked cup (~200g)
-    "Soya Chunks": 345,            // per 100g (dry)
-    "Moong Dal": 212,              // per cooked cup
-    "Tofu": 76,                    // per 100g
-    "Paneer": 265,                 // per 100g
-    "Greek Yogurt": 59,            // per 100g
-    "Curd (Dahi)": 60,             // per 100g
-    "Milk": 60,                    // per 100ml (approx)
-    "Cheese": 402,                 // per 100g
-    "Whey Protein (scoop)": 120,   // per scoop ~30g
-    "Boiled Egg": 78,              // per egg
-    "Egg Bhurji (1 serving)": 200,  // cooked with oil
-    "Grilled Chicken (100g)": 165, // per 100g
-    "Chicken Curry (1 serving)": 250,
-    "Fish Curry (1 serving)": 220,
+export const DEFAULT_PRICE_PREFERENCE = 'mid';
 
-    // Carbs
-    "Whole Wheat Roti": 80,        // per roti (medium)
-    "Brown Rice": 111,             // per 100g cooked
-    "White Rice": 130,             // per 100g cooked
-    "Oats": 389,                   // per 100g dry
-    "Multigrain Bread (slice)": 70,
-    "Sweet Potato": 86,            // per 100g
-    "Dalia (1 cup cooked)": 150,
-    "Idli (1 piece)": 39,
-    "Poha (1 plate)": 250,
-    "Pasta (1 cup cooked)": 200,
-
-    // Fats & energy-dense
-    "Almonds (10 pcs)": 70,        // approx 10 almonds
-    "Walnuts (10 pcs)": 100,
-    "Peanuts (30g)": 170,
-    "Ghee (1 tsp)": 45,
-    "Olive Oil (1 tsp)": 40,
-    "Butter (1 tsp)": 34,
-    "Avocado (1/2)": 120,
-
-    // Veggies (low calorie)
-    "Spinach (Palak) 100g": 23,
-    "Bhindi (Okra) 100g": 33,
-    "Gobi (Cauliflower) 100g": 25,
-    "Cabbage 100g": 25,
-    "Bottle Gourd (Lauki) 100g": 14,
-    "Green Beans 100g": 31,
-    "Carrots 100g": 41,
-    "Cucumber 100g": 16,
-    "Tomato 100g": 18,
-    "Onion 100g": 40,
-    "Mixed Veg Sabzi (1 cup cooked)": 120,
-
-    // Snacks / extras
-    "Banana (medium)": 105,
-    "Peanut Butter (1 tbsp)": 94
-};
-
-/**
- * FOOD_DATABASE: kept as categories for selection/UI use.
- * Base names should match keys in FOOD_CALORIES where calories are available.
- */
-export const FOOD_DATABASE = {
-    proteins: {
-        vegan: ['Lentils (Dal)', 'Chickpeas (Chana)', 'Black Beans (Rajma)', 'Soya Chunks', 'Moong Dal', 'Tofu', 'Peas (Matar)'],
-        vegetarian: ['Paneer', 'Greek Yogurt', 'Curd (Dahi)', 'Milk', 'Cheese', 'Whey Protein (scoop)'],
-        eggetarian: ['Boiled Egg', 'Egg Bhurji (1 serving)', 'Omelette', 'Egg Curry'],
-        nonVeg: ['Grilled Chicken (100g)', 'Chicken Curry (1 serving)', 'Fish Curry (1 serving)', 'Egg Curry']
+export const FOOD_ITEMS = {
+    oats: {
+        id: 'oats',
+        name: 'Oats',
+        calories: 98,
+        macros: { protein: 4.2, carbs: 16.6, fat: 1.7 },
+        serving: { amount: 25, unit: 'g', label: '25 g' },
+        step: 1,
+        min: 1,
+        max: 6,
+        estimatedCost: 8,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: [],
+        tags: ['highProtein', 'highFiber']
     },
-    carbs: {
-        complex: ['Whole Wheat Roti', 'Brown Rice', 'Oats', 'Multigrain Bread (slice)', 'Sweet Potato', 'Dalia (1 cup cooked)', 'Bajra Roti', 'Jowar Roti'],
-        simple: ['White Rice', 'Idli (1 piece)', 'Poha (1 plate)', 'Upma', 'Banana (medium)', 'Potato', 'Pasta (1 cup cooked)'],
-        lowCarb: ['Cauliflower Rice', 'Sautéed Veggies', 'Cucumber Salad', 'Bottle Gourd (Lauki)']
+    curd: {
+        id: 'curd',
+        name: 'Curd',
+        calories: 61,
+        macros: { protein: 3.5, carbs: 4.7, fat: 3.3 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 5,
+        estimatedCost: 10,
+        priceTier: 'mid',
+        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
+        allergens: ['dairy'],
+        tags: ['balanced']
     },
-    fats: {
-        nuts: ['Almonds (10 pcs)', 'Walnuts (10 pcs)', 'Peanuts (30g)', 'Flax Seeds'],
-        oils: ['Ghee (1 tsp)', 'Olive Oil (1 tsp)', 'Butter (1 tsp)'],
-        other: ['Avocado (1/2)', 'Cheese']
+    milk: {
+        id: 'milk',
+        name: 'Milk',
+        calories: 150,
+        macros: { protein: 8, carbs: 12, fat: 8 },
+        serving: { amount: 250, unit: 'ml', label: '250 ml' },
+        step: 1,
+        min: 1,
+        max: 3,
+        estimatedCost: 18,
+        priceTier: 'mid',
+        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: ['dairy'],
+        tags: ['balanced']
     },
-    veggies: ['Spinach (Palak) 100g', 'Bhindi (Okra) 100g', 'Gobi (Cauliflower) 100g', 'Cabbage 100g', 'Bottle Gourd (Lauki) 100g', 'Green Beans 100g', 'Carrots 100g', 'Cucumber 100g', 'Tomato 100g', 'Onion 100g']
+    paneer: {
+        id: 'paneer',
+        name: 'Paneer',
+        calories: 133,
+        macros: { protein: 9, carbs: 1.5, fat: 10 },
+        serving: { amount: 50, unit: 'g', label: '50 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 22,
+        priceTier: 'mid',
+        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
+        allergens: ['dairy'],
+        tags: ['highProtein', 'lowCarb', 'keto']
+    },
+    tofu: {
+        id: 'tofu',
+        name: 'Tofu',
+        calories: 76,
+        macros: { protein: 8, carbs: 1.9, fat: 4.8 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 5,
+        estimatedCost: 22,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
+        allergens: ['soy'],
+        tags: ['highProtein', 'lowCarb']
+    },
+    egg: {
+        id: 'egg',
+        name: 'Boiled Egg',
+        calories: 78,
+        macros: { protein: 6.3, carbs: 0.6, fat: 5.3 },
+        serving: { amount: 1, unit: 'piece', label: '1 egg' },
+        step: 1,
+        min: 1,
+        max: 6,
+        estimatedCost: 8,
+        priceTier: 'mid',
+        dietProfiles: ['eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
+        allergens: ['eggs'],
+        tags: ['highProtein', 'lowCarb', 'keto']
+    },
+    chicken: {
+        id: 'chicken',
+        name: 'Grilled Chicken',
+        calories: 165,
+        macros: { protein: 31, carbs: 0, fat: 3.6 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 5,
+        estimatedCost: 58,
+        priceTier: 'mid',
+        dietProfiles: ['nonVeg'],
+        mealTypes: ['Lunch', 'Snack', 'Dinner'],
+        allergens: [],
+        tags: ['highProtein', 'lowCarb', 'keto']
+    },
+    lentils: {
+        id: 'lentils',
+        name: 'Cooked Lentils (Dal)',
+        calories: 115,
+        macros: { protein: 9, carbs: 20, fat: 0.4 },
+        serving: { amount: 0.5, unit: 'cup', label: '1/2 cup' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 12,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['highProtein', 'highFiber']
+    },
+    chickpeas: {
+        id: 'chickpeas',
+        name: 'Chickpea Curry',
+        calories: 135,
+        macros: { protein: 7, carbs: 22, fat: 2 },
+        serving: { amount: 0.5, unit: 'cup', label: '1/2 cup' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 14,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced', 'highFiber']
+    },
+    rajma: {
+        id: 'rajma',
+        name: 'Rajma',
+        calories: 114,
+        macros: { protein: 7.5, carbs: 20, fat: 0.5 },
+        serving: { amount: 0.5, unit: 'cup', label: '1/2 cup' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 14,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced', 'highFiber']
+    },
+    soyaChunks: {
+        id: 'soyaChunks',
+        name: 'Soya Chunks',
+        calories: 86,
+        macros: { protein: 13, carbs: 8.5, fat: 0.2 },
+        serving: { amount: 25, unit: 'g', label: '25 g dry' },
+        step: 1,
+        min: 1,
+        max: 5,
+        estimatedCost: 11,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner', 'Snack'],
+        allergens: ['soy'],
+        tags: ['highProtein', 'lowCarb']
+    },
+    roti: {
+        id: 'roti',
+        name: 'Whole Wheat Roti',
+        calories: 100,
+        macros: { protein: 3, carbs: 20, fat: 2 },
+        serving: { amount: 1, unit: 'piece', label: '1 roti' },
+        step: 1,
+        min: 1,
+        max: 6,
+        estimatedCost: 8,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: ['gluten'],
+        tags: ['balanced']
+    },
+    brownRice: {
+        id: 'brownRice',
+        name: 'Brown Rice',
+        calories: 111,
+        macros: { protein: 2.6, carbs: 23, fat: 0.9 },
+        serving: { amount: 100, unit: 'g', label: '100 g cooked' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 12,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced', 'highFiber']
+    },
+    whiteRice: {
+        id: 'whiteRice',
+        name: 'White Rice',
+        calories: 130,
+        macros: { protein: 2.4, carbs: 28, fat: 0.3 },
+        serving: { amount: 100, unit: 'g', label: '100 g cooked' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 10,
+        priceTier: 'budget',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    poha: {
+        id: 'poha',
+        name: 'Poha',
+        calories: 250,
+        macros: { protein: 5, carbs: 45, fat: 6 },
+        serving: { amount: 1, unit: 'plate', label: '1 plate' },
+        step: 0.5,
+        min: 0.5,
+        max: 3,
+        estimatedCost: 30,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    bread: {
+        id: 'bread',
+        name: 'Whole Wheat Bread',
+        calories: 70,
+        macros: { protein: 3.3, carbs: 12, fat: 1 },
+        serving: { amount: 1, unit: 'slice', label: '1 slice' },
+        step: 1,
+        min: 1,
+        max: 6,
+        estimatedCost: 6,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: ['gluten'],
+        tags: ['balanced']
+    },
+    sweetPotato: {
+        id: 'sweetPotato',
+        name: 'Sweet Potato',
+        calories: 86,
+        macros: { protein: 1.6, carbs: 20, fat: 0.1 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 5,
+        estimatedCost: 10,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    dalia: {
+        id: 'dalia',
+        name: 'Dalia',
+        calories: 150,
+        macros: { protein: 4.7, carbs: 31, fat: 0.8 },
+        serving: { amount: 1, unit: 'cup', label: '1 cup cooked' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 12,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast'],
+        allergens: ['gluten'],
+        tags: ['balanced', 'highFiber']
+    },
+    idli: {
+        id: 'idli',
+        name: 'Idli',
+        calories: 39,
+        macros: { protein: 1.6, carbs: 8, fat: 0.2 },
+        serving: { amount: 1, unit: 'piece', label: '1 piece' },
+        step: 1,
+        min: 1,
+        max: 6,
+        estimatedCost: 6,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    cauliflowerRice: {
+        id: 'cauliflowerRice',
+        name: 'Cauliflower Rice',
+        calories: 25,
+        macros: { protein: 2, carbs: 5, fat: 0.3 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 10,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['lowCarb', 'keto']
+    },
+    mixedVeg: {
+        id: 'mixedVeg',
+        name: 'Mixed Veg Sabzi',
+        calories: 70,
+        macros: { protein: 2.5, carbs: 9, fat: 3 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 15,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    salad: {
+        id: 'salad',
+        name: 'Fresh Salad',
+        calories: 23,
+        macros: { protein: 1, carbs: 5, fat: 0.2 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 10,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['lowCarb', 'keto']
+    },
+    spinach: {
+        id: 'spinach',
+        name: 'Sauteed Spinach',
+        calories: 30,
+        macros: { protein: 3, carbs: 4, fat: 0.6 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 12,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['lowCarb', 'keto']
+    },
+    stirFriedVeg: {
+        id: 'stirFriedVeg',
+        name: 'Stir-Fried Veggies',
+        calories: 60,
+        macros: { protein: 2.5, carbs: 8, fat: 2 },
+        serving: { amount: 100, unit: 'g', label: '100 g' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 16,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
+        allergens: [],
+        tags: ['lowCarb']
+    },
+    peanuts: {
+        id: 'peanuts',
+        name: 'Peanuts',
+        calories: 85,
+        macros: { protein: 3.6, carbs: 2.4, fat: 7.1 },
+        serving: { amount: 15, unit: 'g', label: '15 g' },
+        step: 1,
+        min: 1,
+        max: 4,
+        estimatedCost: 6,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack', 'Lunch', 'Dinner'],
+        allergens: ['nuts'],
+        tags: ['lowCarb', 'keto']
+    },
+    peanutButter: {
+        id: 'peanutButter',
+        name: 'Peanut Butter',
+        calories: 94,
+        macros: { protein: 4, carbs: 3.5, fat: 8 },
+        serving: { amount: 1, unit: 'tbsp', label: '1 tbsp' },
+        step: 0.5,
+        min: 0.5,
+        max: 4,
+        estimatedCost: 14,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: ['nuts'],
+        tags: ['highProtein', 'lowCarb', 'keto']
+    },
+    roastedChana: {
+        id: 'roastedChana',
+        name: 'Roasted Chana',
+        calories: 100,
+        macros: { protein: 5, carbs: 16, fat: 2 },
+        serving: { amount: 25, unit: 'g', label: '25 g' },
+        step: 1,
+        min: 1,
+        max: 4,
+        estimatedCost: 7,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Snack'],
+        allergens: [],
+        tags: ['highProtein']
+    },
+    ghee: {
+        id: 'ghee',
+        name: 'Ghee',
+        calories: 45,
+        macros: { protein: 0, carbs: 0, fat: 5 },
+        serving: { amount: 1, unit: 'tsp', label: '1 tsp' },
+        step: 0.5,
+        min: 0.5,
+        max: 6,
+        estimatedCost: 4,
+        priceTier: 'mid',
+        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Lunch', 'Dinner', 'Breakfast'],
+        allergens: ['dairy'],
+        tags: ['lowCarb', 'keto']
+    },
+    banana: {
+        id: 'banana',
+        name: 'Banana',
+        calories: 105,
+        macros: { protein: 1.3, carbs: 27, fat: 0.3 },
+        serving: { amount: 1, unit: 'piece', label: '1 banana' },
+        step: 0.5,
+        min: 0.5,
+        max: 3,
+        estimatedCost: 8,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    apple: {
+        id: 'apple',
+        name: 'Apple',
+        calories: 95,
+        macros: { protein: 0.5, carbs: 25, fat: 0.3 },
+        serving: { amount: 1, unit: 'piece', label: '1 apple' },
+        step: 1,
+        min: 1,
+        max: 2,
+        estimatedCost: 15,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Snack', 'Breakfast'],
+        allergens: [],
+        tags: ['balanced']
+    },
+    orange: {
+        id: 'orange',
+        name: 'Orange',
+        calories: 62,
+        macros: { protein: 1.2, carbs: 15.4, fat: 0.2 },
+        serving: { amount: 1, unit: 'piece', label: '1 orange' },
+        step: 1,
+        min: 1,
+        max: 2,
+        estimatedCost: 12,
+        priceTier: 'mid',
+        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        mealTypes: ['Breakfast', 'Snack'],
+        allergens: [],
+        tags: ['balanced']
+    }
 };

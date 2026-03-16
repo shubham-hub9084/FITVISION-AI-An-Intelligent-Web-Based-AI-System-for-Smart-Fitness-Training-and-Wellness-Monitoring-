@@ -1,4 +1,28 @@
-import { GOALS, ACTIVITY_LEVELS, FOOD_DATABASE, FOOD_CALORIES } from '../data/mealData';
+import { GOALS, ACTIVITY_LEVELS, FOOD_ITEMS, DEFAULT_PRICE_PREFERENCE } from '../data/mealData.js';
+import { RECIPE_TEMPLATES } from '../data/mealRecipes.js';
+
+const CALORIE_ALIGNMENT_TOLERANCE = 45;
+
+const MEAL_CONFIGS = {
+    3: [
+        { type: 'Breakfast', ratio: 0.30, time: '08:00', icon: 'ri-sun-line', color: 'yellow' },
+        { type: 'Lunch', ratio: 0.35, time: '13:00', icon: 'ri-restaurant-line', color: 'emerald' },
+        { type: 'Dinner', ratio: 0.35, time: '20:00', icon: 'ri-moon-line', color: 'orange' }
+    ],
+    4: [
+        { type: 'Breakfast', ratio: 0.25, time: '08:00', icon: 'ri-sun-line', color: 'yellow' },
+        { type: 'Lunch', ratio: 0.35, time: '13:00', icon: 'ri-restaurant-line', color: 'emerald' },
+        { type: 'Snack', ratio: 0.12, time: '17:00', icon: 'ri-cup-line', color: 'purple' },
+        { type: 'Dinner', ratio: 0.28, time: '20:00', icon: 'ri-moon-line', color: 'orange' }
+    ],
+    5: [
+        { type: 'Breakfast', label: 'Breakfast', ratio: 0.22, time: '08:00', icon: 'ri-sun-line', color: 'yellow' },
+        { type: 'Snack', label: 'Morning Snack', ratio: 0.10, time: '11:00', icon: 'ri-cup-line', color: 'purple' },
+        { type: 'Lunch', ratio: 0.30, time: '13:30', icon: 'ri-restaurant-line', color: 'emerald' },
+        { type: 'Snack', label: 'Evening Snack', ratio: 0.10, time: '17:30', icon: 'ri-cup-line', color: 'indigo' },
+        { type: 'Dinner', ratio: 0.28, time: '20:30', icon: 'ri-moon-line', color: 'orange' }
+    ]
+};
 
 export const calculateStats = (formData) => {
     const age = Number(formData.age);
@@ -8,18 +32,17 @@ export const calculateStats = (formData) => {
     const activityId = formData.activityLevel;
     const goalId = formData.goal;
 
-    if (!age || !weight || !height || !gender || !activityId) return { bmr: 0, tdee: 0, recommended: 2000, isCapped: false };
+    if (!age || !weight || !height || !gender || !activityId) {
+        return { bmr: 0, tdee: 0, recommended: 2000, isCapped: false };
+    }
 
-    // Mifflin-St Jeor Equation
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-    if (gender === 'male') bmr += 5;
-    else bmr -= 161;
+    bmr += gender === 'male' ? 5 : -161;
 
-    const activity = ACTIVITY_LEVELS.find(a => a.id === activityId);
-    const multiplier = activity ? activity.multiplier : 1.2;
-    const tdee = Math.round(bmr * multiplier);
+    const activity = ACTIVITY_LEVELS.find((item) => item.id === activityId);
+    const tdee = Math.round(bmr * (activity ? activity.multiplier : 1.2));
 
-    const goal = GOALS.find(g => g.id === goalId);
+    const goal = GOALS.find((item) => item.id === goalId);
     let recommended = tdee + (goal ? goal.surplus : 0);
 
     let isCapped = false;
@@ -27,163 +50,340 @@ export const calculateStats = (formData) => {
         recommended = 4000;
         isCapped = true;
     }
-    recommended = Math.max(1200, recommended); // Safety floor
+
+    recommended = Math.max(1200, recommended);
 
     return { bmr: Math.round(bmr), tdee, recommended: Math.round(recommended), isCapped };
 };
 
 export const generateWeeklyPlan = (formData) => {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const mealConfigs = getMealConfigs(formData.numberOfMeals);
     const today = new Date();
 
-    return days.map((dayName, index) => {
+    return Array.from({ length: 7 }, (_, dayIndex) => {
         const date = new Date(today);
-        date.setDate(today.getDate() + index);
+        date.setDate(today.getDate() + dayIndex);
+
+        const meals = generateDailyMeals(formData, dayIndex, mealConfigs);
+        const totals = summarizeMeals(meals);
 
         return {
-            day: `Day ${index + 1} - ${dayName}`,
+            day: `Day ${dayIndex + 1} - ${date.toLocaleDateString(undefined, { weekday: 'long' })}`,
             date: date.toLocaleDateString(),
-            meals: generateDailyMeals(formData)
+            meals,
+            totals
         };
     });
 };
 
-const generateDailyMeals = (formData) => {
-    const { calorieTarget, dietaryPreferences, goal } = formData;
-    const goalData = GOALS.find(g => g.id === goal);
+const getMealConfigs = (numberOfMeals) => {
+    return MEAL_CONFIGS[numberOfMeals] || MEAL_CONFIGS[4];
+};
 
-    // 3 Meal Split: 30% - 35% - 35%
-    const meals = [
-        { type: 'Breakfast', ratio: 0.30, time: '08:00', icon: 'ri-sun-line', color: 'yellow' },
-        { type: 'Lunch', ratio: 0.35, time: '13:00', icon: 'ri-restaurant-line', color: 'emerald' },
-        { type: 'Dinner', ratio: 0.35, time: '20:00', icon: 'ri-moon-line', color: 'orange' }
-    ];
+const generateDailyMeals = (formData, dayIndex, mealConfigs) => {
+    const goalData = GOALS.find((goal) => goal.id === formData.goal) || GOALS[1];
+    const prefs = normalizePreferences(formData.dietaryPreferences);
 
-    return meals.map(mealConfig => {
-        const mealCalories = Math.round(calorieTarget * mealConfig.ratio);
-        return createDynamicMeal(mealConfig, mealCalories, dietaryPreferences, goalData);
+    return mealConfigs.map((config, mealIndex) => {
+        const targetCalories = Math.round(Number(formData.calorieTarget || 2000) * config.ratio);
+        const recipe = selectRecipe(config.type, prefs, goalData, targetCalories, dayIndex, mealIndex);
+        const { entries, totals } = buildMealEntries(recipe, targetCalories);
+        const calorieDelta = Math.round(totals.calories - targetCalories);
+
+        return {
+            time: config.time,
+            name: config.label || config.type,
+            title: recipe.title,
+            calories: Math.round(totals.calories),
+            targetCalories,
+            calorieDelta,
+            ingredients: entries.map(formatIngredient),
+            description: buildMealDescription(recipe, targetCalories, calorieDelta, recipe.priceTier),
+            macros: {
+                protein: `${Math.round(totals.protein)}g`,
+                carbs: `${Math.round(totals.carbs)}g`,
+                fat: `${Math.round(totals.fat)}g`
+            },
+            estimatedCost: Math.round(totals.estimatedCost),
+            priceTier: recipe.priceTier,
+            icon: config.icon,
+            color: config.color
+        };
     });
 };
 
-const createDynamicMeal = (config, targetCalories, prefs, goalData) => {
-    // 1. Define Meal Structure based on type
-    let structure = [];
-    if (config.type === 'Breakfast') {
-        structure = ['protein', 'carb', 'fruit']; // e.g. Eggs + Toast + Banana
-    } else {
-        structure = ['protein', 'carb', 'veggie', 'fat']; // e.g. Chicken + Rice + Broccoli + Oil
+const selectRecipe = (mealType, prefs, goalData, targetCalories, dayIndex, mealIndex) => {
+    const candidates = (RECIPE_TEMPLATES[mealType] || []).filter((recipe) => recipeMatchesPreferences(recipe, prefs));
+    const pool = getPreferredPricePool(candidates);
+
+    const ranked = pool
+        .map((recipe) => ({ recipe, score: scoreRecipe(recipe, prefs, goalData, targetCalories) }))
+        .sort((left, right) => right.score - left.score)
+        .map((item) => item.recipe);
+
+    const shortlist = ranked.slice(0, Math.min(3, ranked.length));
+    return shortlist[(dayIndex + mealIndex) % shortlist.length] || ranked[0] || RECIPE_TEMPLATES[mealType][0];
+};
+
+const getPreferredPricePool = (recipes) => {
+    const midTier = recipes.filter((recipe) => recipe.priceTier === DEFAULT_PRICE_PREFERENCE);
+    if (midTier.length) {
+        return midTier;
     }
 
-    // 2. Select Ingredients
-    const ingredients = structure.map(type => selectIngredient(type, prefs));
+    const budgetTier = recipes.filter((recipe) => recipe.priceTier === 'budget');
+    return budgetTier.length ? budgetTier : recipes;
+};
 
-    // 3. Calculate Portions to hit target calories
-    const portions = ingredients.map((item, idx) => {
-        if (!item) return null;
+const recipeMatchesPreferences = (recipe, prefs) => {
+    const profile = resolveDietProfile(prefs);
 
-        let allocRatio = 0.25; // default equal split
-        if (structure[idx] === 'protein') allocRatio = 0.40;
-        if (structure[idx] === 'carb') allocRatio = 0.40;
-        if (structure[idx] === 'veggie') allocRatio = 0.05; // veggies low cal
-        if (structure[idx] === 'fat') allocRatio = 0.15;
-        if (structure[idx] === 'fruit') allocRatio = 0.20;
+    if (!recipe.dietProfiles.includes(profile)) {
+        return false;
+    }
 
-        const itemCalTarget = targetCalories * allocRatio;
-        const calPerUnit = FOOD_CALORIES[item] || 100; // default 100 if missing
+    if (prefs.keto && !recipe.ketoFriendly) {
+        return false;
+    }
 
-        const rawQty = itemCalTarget / calPerUnit;
+    if (!prefs.keto && prefs.lowCarb && !recipe.lowCarbFriendly) {
+        return false;
+    }
 
-        // --- Formatting Logic ---
-        // 1. Handle "100g" items (Convert to grams)
-        if (item.includes("100g")) {
-            const grams = Math.round(rawQty * 100 / 10) * 10; // Round to nearest 10g
-            const cleanName = item.replace(" 100g", "").replace("(100g)", "").trim();
-            return `${grams}g ${cleanName}`;
+    const blockedAllergens = new Set(normalizeAllergies(prefs.allergies));
+    if (prefs.omitNuts) {
+        blockedAllergens.add('nuts');
+    }
+
+    return recipe.ingredients.every((ingredient) => {
+        const food = FOOD_ITEMS[ingredient.foodId];
+        return !food.allergens.some((allergen) => blockedAllergens.has(allergen));
+    });
+};
+
+const scoreRecipe = (recipe, prefs, goalData, targetCalories) => {
+    const baseTotals = calculateTotals(
+        recipe.ingredients.map((ingredient) => ({
+            ...ingredient,
+            quantity: ingredient.quantity,
+            food: FOOD_ITEMS[ingredient.foodId]
+        }))
+    );
+
+    let score = 0;
+
+    score += recipe.priceTier === DEFAULT_PRICE_PREFERENCE ? 150 : 0;
+    score -= Math.abs(targetCalories - baseTotals.calories);
+    score += baseTotals.protein * (prefs.highProtein || goalData.id === 'muscle-gain' ? 12 : 4);
+
+    if (prefs.highProtein || goalData.id === 'muscle-gain') {
+        score += recipe.highProteinFriendly ? 45 : 0;
+    }
+
+    if (goalData.id === 'lose-weight') {
+        score += (baseTotals.protein * 6) - (baseTotals.calories * 0.03);
+    }
+
+    if (prefs.lowCarb) {
+        score -= baseTotals.carbs * 2.5;
+        score += recipe.lowCarbFriendly ? 35 : 0;
+    }
+
+    if (prefs.keto) {
+        score -= baseTotals.carbs * 5;
+        score += baseTotals.fat * 2;
+        score += recipe.ketoFriendly ? 55 : 0;
+    }
+
+    return score;
+};
+
+const buildMealEntries = (recipe, targetCalories) => {
+    const baseEntries = recipe.ingredients.map((ingredient) => ({
+        ...ingredient,
+        food: FOOD_ITEMS[ingredient.foodId]
+    }));
+    const baseTotals = calculateTotals(baseEntries);
+    const scaleFactor = clamp(targetCalories / Math.max(baseTotals.calories, 1), 0.75, 2.6);
+
+    const scaledEntries = baseEntries.map((entry) => {
+        const rawQuantity = entry.quantity * scaleFactor;
+        const minQuantity = entry.minQuantity ?? entry.food.min ?? entry.food.step ?? 1;
+        const maxQuantity = entry.maxQuantity ?? entry.food.max ?? rawQuantity;
+
+        return {
+            ...entry,
+            quantity: clamp(roundToStep(rawQuantity, entry.food.step || 1), minQuantity, maxQuantity)
+        };
+    });
+
+    return tuneMealEntries(scaledEntries, targetCalories);
+};
+
+const tuneMealEntries = (entries, targetCalories) => {
+    const workingEntries = entries.map((entry) => ({ ...entry }));
+    let totals = calculateTotals(workingEntries);
+    let safetyCounter = 0;
+
+    while (Math.abs(targetCalories - totals.calories) > CALORIE_ALIGNMENT_TOLERANCE && safetyCounter < 24) {
+        const direction = targetCalories > totals.calories ? 1 : -1;
+        const bestEntry = findBestAdjustment(workingEntries, totals.calories, targetCalories, direction);
+
+        if (!bestEntry) {
+            break;
         }
-        // 2. Handle Count/Volume items (slices, pieces, cups, rotis)
-        let unit = "serving(s)";
-        let cleanName = item;
 
-        if (item.includes("(slice)")) { unit = "slice(s)"; cleanName = item.replace("(slice)", ""); }
-        else if (item.includes("(1 piece)")) { unit = "piece(s)"; cleanName = item.replace("(1 piece)", ""); }
-        else if (item.includes("(medium)")) { unit = "medium"; cleanName = item.replace("(medium)", ""); }
-        else if (item.includes("Roti")) { unit = "piece(s)"; } // Special case for Roti
-        else if (item.includes("(1 cup")) { unit = "cup(s)"; cleanName = item.replace(/\(1 cup.*\)/, ""); }
-        else if (item.includes("(1 tsp)")) { unit = "tsp"; cleanName = item.replace("(1 tsp)", ""); }
-        else if (item.includes("(1 tbsp)")) { unit = "tbsp"; cleanName = item.replace("(1 tbsp)", ""); }
-        else if (item.includes(" pcs)")) { unit = "pcs"; cleanName = item.replace(/\(\d+ pcs\)/, ""); } // e.g. Almonds (10 pcs)
-        else if (item.includes("(Dal)") || item.includes("(Chana)") || item.includes("Curry")) { unit = "cup(s)"; } // Heuristic for Indian gravy dishes
+        bestEntry.quantity = roundNumber(bestEntry.quantity + (direction * (bestEntry.food.step || 1)), 2);
+        totals = calculateTotals(workingEntries);
+        safetyCounter += 1;
+    }
 
-        // 3. Round to nearest 0.5 for count items
-        let qty = Math.round(rawQty * 2) / 2;
-        if (qty < 0.5) qty = 0.5; // Minimum 0.5
+    return { entries: workingEntries, totals };
+};
 
-        return `${qty} ${unit} ${cleanName.trim()}`;
+const findBestAdjustment = (entries, currentCalories, targetCalories, direction) => {
+    return entries
+        .filter((entry) => entry.adjustable !== false)
+        .map((entry) => {
+            const step = entry.food.step || 1;
+            const nextQuantity = entry.quantity + (direction * step);
+            const minQuantity = entry.minQuantity ?? entry.food.min ?? step;
+            const maxQuantity = entry.maxQuantity ?? entry.food.max ?? Number.POSITIVE_INFINITY;
 
-    }).filter(Boolean);
+            if (nextQuantity < minQuantity || nextQuantity > maxQuantity) {
+                return null;
+            }
 
+            const nextCalories = currentCalories + (direction * entry.food.calories * step);
 
-    // 3. Calculate Macros (Theoretical based on goal mostly, since we don't have macro data per food in simple map)
-    const protein = Math.round((targetCalories * goalData.macros.p) / 4);
-    const carbs = Math.round((targetCalories * goalData.macros.c) / 4);
-    const fat = Math.round((targetCalories * goalData.macros.f) / 9);
+            return {
+                entry,
+                remainingGap: Math.abs(targetCalories - nextCalories),
+                priority: entry.priority ?? 99,
+                stepCalories: entry.food.calories * step
+            };
+        })
+        .filter(Boolean)
+        .sort((left, right) => left.remainingGap - right.remainingGap || left.priority - right.priority || left.stepCalories - right.stepCalories)[0]?.entry || null;
+};
 
-    const mainItem = ingredients[0] || 'Balanced Meal';
+const calculateTotals = (entries) => {
+    return entries.reduce((totals, entry) => ({
+        calories: totals.calories + (entry.food.calories * entry.quantity),
+        protein: totals.protein + (entry.food.macros.protein * entry.quantity),
+        carbs: totals.carbs + (entry.food.macros.carbs * entry.quantity),
+        fat: totals.fat + (entry.food.macros.fat * entry.quantity),
+        estimatedCost: totals.estimatedCost + (entry.food.estimatedCost * entry.quantity)
+    }), {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        estimatedCost: 0
+    });
+};
+
+const summarizeMeals = (meals) => {
+    const totals = meals.reduce((summary, meal) => ({
+        calories: summary.calories + meal.calories,
+        protein: summary.protein + parseMacro(meal.macros.protein),
+        carbs: summary.carbs + parseMacro(meal.macros.carbs),
+        fat: summary.fat + parseMacro(meal.macros.fat),
+        estimatedCost: summary.estimatedCost + meal.estimatedCost
+    }), {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        estimatedCost: 0
+    });
 
     return {
-        time: config.time,
-        name: config.type,
-        title: `${mainItem} Meal`, // e.g. "Grilled Chicken Meal"
-        calories: targetCalories,
-        ingredients: portions,
-        description: `A personalized ${config.type.toLowerCase()} designed for your ${goalData.name.toLowerCase()} goal.`,
-        macros: { protein: `${protein}g`, carbs: `${carbs}g`, fat: `${fat}g` },
-        icon: config.icon,
-        color: config.color
+        calories: Math.round(totals.calories),
+        protein: `${Math.round(totals.protein)}g`,
+        carbs: `${Math.round(totals.carbs)}g`,
+        fat: `${Math.round(totals.fat)}g`,
+        estimatedCost: Math.round(totals.estimatedCost)
     };
 };
 
-const selectIngredient = (type, prefs) => {
-    let list = [];
-    switch (type) {
-        case 'protein':
-            list = getProteinList(prefs);
-            break;
-        case 'carb':
-            list = getCarbList(prefs);
-            break;
-        case 'fat':
-            list = [...FOOD_DATABASE.fats.nuts, ...FOOD_DATABASE.fats.oils, ...FOOD_DATABASE.fats.other];
-            break;
-        case 'veggie':
-            list = FOOD_DATABASE.veggies;
-            break;
-        case 'fruit':
-            list = ["Banana (medium)", "Apple (medium)", "Orange (medium)"]; // limited fallback or add to data
-            // Let's use simple carbs or generic fruits if not in data
-            // The data has 'Banana (medium)' in FOOD_CALORIES
-            break;
-        default:
-            return null;
+const buildMealDescription = (recipe, targetCalories, calorieDelta, priceTier) => {
+    return `${recipe.description} Built from ${priceTier} price ingredients and lands within ${Math.abs(calorieDelta)} kcal of the ${targetCalories} kcal target.`;
+};
+
+const formatIngredient = (entry) => {
+    const totalAmount = roundNumber(entry.quantity * entry.food.serving.amount, 1);
+    const unit = entry.food.serving.unit;
+
+    if (unit === 'g' || unit === 'ml') {
+        return `${formatNumber(totalAmount)} ${unit} ${entry.food.name}`;
     }
 
-    // Filter by available keys in calorie map to ensure we can calculate
-    list = list.filter(item => FOOD_CALORIES[item] !== undefined);
-
-    if (list.length === 0) return null;
-    return list[Math.floor(Math.random() * list.length)];
+    return `${formatNumber(totalAmount)} ${pluralize(unit, totalAmount)} ${entry.food.name}`;
 };
 
-const getProteinList = (prefs) => {
-    let list = [];
-    if (prefs.vegan) list = [...FOOD_DATABASE.proteins.vegan];
-    else if (prefs.vegetarian) list = [...FOOD_DATABASE.proteins.vegetarian, ...FOOD_DATABASE.proteins.vegan];
-    else if (prefs.eggetarian) list = [...FOOD_DATABASE.proteins.eggetarian, ...FOOD_DATABASE.proteins.vegetarian, ...FOOD_DATABASE.proteins.vegan];
-    else list = [...FOOD_DATABASE.proteins.nonVeg];
-    return list;
+const normalizePreferences = (prefs = {}) => ({
+    vegan: Boolean(prefs.vegan),
+    vegetarian: Boolean(prefs.vegetarian),
+    eggetarian: Boolean(prefs.eggetarian),
+    nonVeg: Boolean(prefs.nonVeg ?? prefs['non-veg']),
+    highProtein: Boolean(prefs.highProtein ?? prefs['high-protein']),
+    lowCarb: Boolean(prefs.lowCarb ?? prefs['low-carb']),
+    keto: Boolean(prefs.keto),
+    omitNuts: Boolean(prefs.omitNuts),
+    allergies: Array.isArray(prefs.allergies) ? prefs.allergies : []
+});
+
+const resolveDietProfile = (prefs) => {
+    if (prefs.vegan) {
+        return 'vegan';
+    }
+
+    if (prefs.vegetarian) {
+        return 'vegetarian';
+    }
+
+    if (prefs.eggetarian) {
+        return 'eggetarian';
+    }
+
+    return 'nonVeg';
 };
 
-const getCarbList = (prefs) => {
-    if (prefs.lowCarb || prefs.keto) return FOOD_DATABASE.carbs.lowCarb;
-    return [...FOOD_DATABASE.carbs.complex, ...FOOD_DATABASE.carbs.simple];
+const normalizeAllergies = (allergies) => {
+    return allergies.map((allergy) => String(allergy).trim().toLowerCase());
+};
+
+const parseMacro = (value) => Number.parseFloat(String(value).replace('g', '')) || 0;
+
+const roundToStep = (value, step) => {
+    return roundNumber(Math.round(value / step) * step, 2);
+};
+
+const roundNumber = (value, precision = 0) => {
+    const factor = 10 ** precision;
+    return Math.round(value * factor) / factor;
+};
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const formatNumber = (value) => {
+    return Number.isInteger(value) ? String(value) : String(roundNumber(value, 1));
+};
+
+const pluralize = (unit, amount) => {
+    if (amount === 1) {
+        return unit;
+    }
+
+    const pluralMap = {
+        piece: 'pieces',
+        slice: 'slices',
+        cup: 'cups',
+        plate: 'plates',
+        tbsp: 'tbsp',
+        tsp: 'tsp'
+    };
+
+    return pluralMap[unit] || unit;
 };

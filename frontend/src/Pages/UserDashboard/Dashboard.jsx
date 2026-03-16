@@ -7,9 +7,9 @@ import Achievements from './Achievements/Achievements';
 import Nutrition from './Nutrition/Nutrition';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from "../../context/AuthContext";
 
 const UserDashboard = () => {
     const [showCameraWorkout, setShowCameraWorkout] = useState(false);
@@ -79,9 +79,11 @@ const UserDashboard = () => {
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                                 Welcome back, {user?.full_name || 'User'}!
                             </h1>
-                            <p className="text-gray-600 dark:text-gray-400">
-                                Here's your fitness progress and personalized recommendations.
-                            </p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-gray-600 dark:text-gray-400">
+                                    Here's your fitness progress and personalized recommendations.
+                                </p>
+                            </div>
                         </div>
                         <div className="mt-4 sm:mt-0 flex gap-3">
                             <button

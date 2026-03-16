@@ -3,37 +3,39 @@ import 'remixicon/fonts/remixicon.css';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Logo from '../../components/Logo';
 import { GOALS, ACTIVITY_LEVELS, DIET_TYPES } from '../../data/mealData';
 import { calculateStats, generateWeeklyPlan } from '../../utils/mealPlanGenerator';
 import BackButton from '../../components/BackButton';
+
+const createInitialFormData = () => ({
+  goal: '',
+  name: '',
+  age: '',
+  gender: '',
+  height: '',
+  weight: '',
+  activityLevel: '',
+  calorieTarget: 2500,
+  numberOfMeals: 4,
+  dietaryPreferences: {
+    vegan: false,
+    vegetarian: false,
+    eggetarian: false,
+    nonVeg: false,
+    omitNuts: false,
+    highProtein: false,
+    lowCarb: false,
+    keto: false,
+    allergies: []
+  },
+  customAllergies: ''
+});
 
 const MealPlans = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    goal: '',
-    name: '',
-    age: '',
-    gender: '',
-    height: '',
-    weight: '',
-    activityLevel: '',
-    calorieTarget: 2500,
-    numberOfMeals: 4,
-    dietaryPreferences: {
-      vegan: false,
-      vegetarian: false,
-      eggetarian: false,
-      omitNuts: false,
-      highProtein: false,
-      lowCarb: false,
-      keto: false,
-      allergies: []
-    },
-    customAllergies: ''
-  });
+  const [formData, setFormData] = useState(createInitialFormData);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [calculatedStats, setCalculatedStats] = useState({ bmr: 0, tdee: 0, recommended: 0, isCapped: false });
   const [isFromCalculator, setIsFromCalculator] = useState(false);
@@ -72,7 +74,7 @@ const MealPlans = () => {
       setIsFromCalculator(true);
 
       // Auto-generate plan immediately
-      const fullData = { ...formData, ...updates };
+      const fullData = { ...createInitialFormData(), ...updates };
       const plan = generateWeeklyPlan(fullData);
       setGeneratedPlan(plan);
       setCurrentStep(5);
@@ -119,19 +121,17 @@ const MealPlans = () => {
   const handleDietaryChange = (field, value) => {
     setFormData(prev => {
       const newPrefs = { ...prev.dietaryPreferences, [field]: value };
-      // Logic to uncheck conflicting diets
-      if (field === 'vegan' && value) { newPrefs.vegetarian = true; newPrefs.eggetarian = false; newPrefs.nonVeg = false; }
-      if (field === 'vegetarian' && value) { newPrefs.eggetarian = false; newPrefs.nonVeg = false; }
-      if (field === 'keto' && value) { newPrefs.lowCarb = true; }
-      return { ...prev, dietaryPreferences: newPrefs };
-    });
-  };
 
-  const handleAllergyChange = (allergy) => {
-    setFormData(prev => {
-      const allergies = prev.dietaryPreferences.allergies;
-      const newAllergies = allergies.includes(allergy) ? allergies.filter(a => a !== allergy) : [...allergies, allergy];
-      return { ...prev, dietaryPreferences: { ...prev.dietaryPreferences, allergies: newAllergies } };
+      const primaryDietFields = ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'];
+      if (primaryDietFields.includes(field) && value) {
+        primaryDietFields.forEach((dietField) => {
+          if (dietField !== field) newPrefs[dietField] = false;
+        });
+      }
+
+      if (field === 'keto' && value) { newPrefs.lowCarb = true; }
+      if (field === 'lowCarb' && !value) { newPrefs.keto = false; }
+      return { ...prev, dietaryPreferences: newPrefs };
     });
   };
 
@@ -148,15 +148,18 @@ const MealPlans = () => {
 
     let content = `FitVision AI - Weekly Meal Plan\n`;
     content += `Goal: ${formData.goal.replace('-', ' ')}\n`;
-    content += `Calories: ${formData.calorieTarget} kcal\n\n`;
+    content += `Calories: ${formData.calorieTarget} kcal\n`;
+    content += `Preference: Mid-price ingredient set\n\n`;
 
     generatedPlan.forEach(day => {
       content += `----------------------------------------\n`;
       content += `${day.day} (${day.date})\n`;
       content += `----------------------------------------\n`;
+      content += `Daily total: ${day.totals.calories} kcal | P: ${day.totals.protein} | C: ${day.totals.carbs} | F: ${day.totals.fat} | Cost: Rs. ${day.totals.estimatedCost}\n\n`;
       day.meals.forEach(meal => {
         content += `[${meal.name}] ${meal.title} (${meal.calories} kcal)\n`;
         content += `   ${meal.description}\n`;
+        content += `   Target: ${meal.targetCalories} kcal | Delta: ${meal.calorieDelta >= 0 ? '+' : ''}${meal.calorieDelta} kcal | Cost: Rs. ${meal.estimatedCost}\n`;
         content += `   Ingredients: ${meal.ingredients.join(', ')}\n`;
         content += `   Macros: P: ${meal.macros.protein} | C: ${meal.macros.carbs} | F: ${meal.macros.fat}\n\n`;
       });
@@ -212,6 +215,14 @@ const MealPlans = () => {
       navigate(-1);
     }
   };
+
+  const weeklySummary = generatedPlan ? generatedPlan.reduce((summary, dayPlan) => ({
+    calories: summary.calories + dayPlan.totals.calories,
+    estimatedCost: summary.estimatedCost + dayPlan.totals.estimatedCost
+  }), {
+    calories: 0,
+    estimatedCost: 0
+  }) : null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300">
@@ -371,6 +382,9 @@ const MealPlans = () => {
                   </label>
                 ))}
               </div>
+              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                Plans use practical mid-price ingredients first, then adjust portions to stay close to your calorie target.
+              </p>
             </div>
 
 
@@ -383,6 +397,11 @@ const MealPlans = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your AI Generated Weekly Plan</h2>
+                  {weeklySummary && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      Avg day: {Math.round(weeklySummary.calories / generatedPlan.length)} kcal | Approx. Rs. {Math.round(weeklySummary.estimatedCost / generatedPlan.length)} | Mid-price ingredients
+                    </p>
+                  )}
                   <p className="text-gray-600 dark:text-gray-400 mt-1">{formData.calorieTarget} kcal • {formData.goal.replace('-', ' ')}</p>
                 </div>
                 <div className="flex gap-3">
@@ -399,7 +418,12 @@ const MealPlans = () => {
             {generatedPlan.map((dayPlan, i) => (
               <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-slate-700 transition-colors duration-300">
                 <div className="bg-gray-50 dark:bg-slate-700 p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">{dayPlan.day}</h3>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">{dayPlan.day}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {dayPlan.totals.calories} kcal | P {dayPlan.totals.protein} | C {dayPlan.totals.carbs} | F {dayPlan.totals.fat} | Rs. {dayPlan.totals.estimatedCost}
+                    </p>
+                  </div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">{dayPlan.date}</span>
                 </div>
                 <div className="p-4 space-y-4">
@@ -413,6 +437,9 @@ const MealPlans = () => {
                           <div>
                             <h4 className="font-bold text-lg text-gray-900 dark:text-white leading-tight">{meal.name}</h4>
                             <p className="text-sm text-emerald-700 dark:text-emerald-400 font-medium mt-0.5">{meal.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              Target {meal.targetCalories} kcal | Delta {meal.calorieDelta >= 0 ? '+' : ''}{meal.calorieDelta} kcal | Rs. {meal.estimatedCost}
+                            </p>
                           </div>
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
                             {meal.calories} kcal
