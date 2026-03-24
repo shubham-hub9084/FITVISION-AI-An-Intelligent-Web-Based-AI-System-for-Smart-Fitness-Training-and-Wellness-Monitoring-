@@ -18,7 +18,8 @@ import PrivateRoute from './PrivateRoute';
 import Layout from './Layout';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import Chatbot from './components/Chatbot/Chatbot';
+import { FloatingAiAssistant } from './components/ui/glowing-ai-chat-assistant';
+import ScrollToTop from './components/ScrollToTop';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -43,7 +44,8 @@ const App = () => {
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
       <AuthProvider>
         <ThemeProvider>
-          <Chatbot />
+          <FloatingAiAssistant />
+          <ScrollToTop />
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path='/' element={<HomePage />} />

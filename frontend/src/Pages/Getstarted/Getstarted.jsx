@@ -1,5 +1,5 @@
 import React from 'react'
-import { GiNachos } from 'react-icons/gi'
+
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -13,10 +13,7 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
     // Collect form data
     const formData = new FormData(e.target);
     const data = {
-      goal: formData.get('fitnessGoal'),
-      experience: formData.get('experience'),
-      frequency: formData.get('frequency'),
-      // Collect other fields if needed, e.g. workoutTypes
+      workoutTypes: formData.getAll('workoutTypes'),
     };
 
     // Save to profile
@@ -29,194 +26,147 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
   }
 
   const handleSignIn = () => {
-    openSignUp(); // Or openSignIn
+    openSignUp(); 
   }
 
   return (
     <div>
       {/* Get Started Modal */}
       {showGetStartedModal && (
-        <div className="fixed inset-0 bg-white/50 dark:bg-slate-900/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-colors duration-300">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto shadow-xl border border-gray-100 dark:border-slate-700 transition-colors duration-300">
+        <div className="fixed inset-0 bg-slate-950/60 flex items-center justify-center z-[100] p-4 backdrop-blur-md transition-all duration-500">
+          <div 
+            className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 dark:border-slate-800 transition-all duration-300"
+            style={{ animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }}
+          >
             <button
               onClick={() => setShowGetStartedModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer transition-colors"
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white cursor-pointer transition-all hover:rotate-90"
             >
               <i className="ri-close-line text-2xl"></i>
             </button>
 
-            <div className="text-center mb-6 sm:mb-8">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-rocket-line text-emerald-600 dark:text-emerald-400 text-xl sm:text-2xl"></i>
+            <div className="text-center mb-10">
+              <div className="w-20 h-20 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3 hover:rotate-0 transition-transform duration-500">
+                <i className="ri-rocket-2-fill text-emerald-600 dark:text-emerald-400 text-4xl"></i>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Start Your AI Training Journey
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">
+                Your AI Journey Starts Here
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                Let's set up your personalized fitness profile to get the most out of FitVision AI
+              <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
+                Connect with our AI engine to transform your training with real-time feedback.
               </p>
             </div>
 
             {!user ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Please sign in or create an account to start your training journey.</p>
+              <div className="text-center py-10 bg-emerald-50 dark:bg-emerald-950/20 rounded-3xl border border-emerald-100 dark:border-emerald-800/30">
+                <p className="text-gray-700 dark:text-emerald-200/70 mb-8 px-6 font-medium">Create your account to unlock personalized AI tracking and progress insights.</p>
                 <button
                   onClick={handleSignIn}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold text-lg hover:shadow-lg transition-all"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-1 active:translate-y-0 transition-all"
                 >
-                  Sign In / Sign Up
+                  Join FitVision AI
                 </button>
-                <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                  Powered by <span className="font-semibold text-gray-700 dark:text-gray-300">Clerk</span> Authentication
-                </p>
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                    Secured by Clerk
+                  </p>
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleStartTraining} className="space-y-4 sm:space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+              <form onSubmit={handleStartTraining} className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="block text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider ml-1">First Name</label>
                     <input
                       id="firstName"
                       name="firstName"
                       type="text"
                       defaultValue={user.first_name || user.full_name?.split(' ')[0]}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+                      className="w-full px-5 py-4 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none text-gray-900 dark:text-white font-medium transition-all"
                       placeholder="John"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="block text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider ml-1">Last Name</label>
                     <input
                       id="lastName"
                       name="lastName"
                       type="text"
                       defaultValue={user.last_name || (user.full_name?.split(' ').length > 1 ? user.full_name?.split(' ')[1] : '')}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
+                      className="w-full px-5 py-4 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-emerald-500 rounded-2xl outline-none text-gray-900 dark:text-white font-medium transition-all"
                       placeholder="Doe"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    defaultValue={user.email}
-                    disabled
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-gray-400 text-sm cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="fitnessGoal" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fitness Goal</label>
-                  <select
-                    id="fitnessGoal"
-                    name="fitnessGoal"
-                    required
-                    defaultValue={user.goal || ""}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm pr-8 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-colors"
-                  >
-                    <option value="">Select your primary goal</option>
-                    <option value="weight-loss">Weight Loss</option>
-                    <option value="muscle-gain">Muscle Gain</option>
-                    <option value="strength">Build Strength</option>
-                    <option value="endurance">Improve Endurance</option>
-                    <option value="flexibility">Increase Flexibility</option>
-                    <option value="general">General Fitness</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" id="experience-label">Experience Level</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <label className="flex items-center p-3 border border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors" aria-labelledby="experience-label">
-                      <input type="radio" name="experience" value="beginner" className="mr-3 accent-emerald-600" required aria-label="Beginner experience level" />
-                      <div>
-                        <div className="font-medium text-sm text-gray-900 dark:text-white">Beginner</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">0-6 months</div>
-                      </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between ml-1">
+                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" id="workoutTypes-label">
+                      Select Exercises To Start With
                     </label>
-                    <label className="flex items-center p-3 border border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors" aria-labelledby="experience-label">
-                      <input type="radio" name="experience" value="intermediate" className="mr-3 accent-emerald-600" required aria-label="Intermediate experience level" />
-                      <div>
-                        <div className="font-medium text-sm text-gray-900 dark:text-white">Intermediate</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">6+ months</div>
-                      </div>
-                    </label>
-                    <label className="flex items-center p-3 border border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors" aria-labelledby="experience-label">
-                      <input type="radio" name="experience" value="advanced" className="mr-3 accent-emerald-600" required aria-label="Advanced experience level" />
-                      <div>
-                        <div className="font-medium text-sm text-gray-900 dark:text-white">Advanced</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">2+ years</div>
-                      </div>
-                    </label>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
+                      AI ENABLED
+                    </span>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" id="frequency-label">Workout Frequency</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {['2-3 days', '3-4 days', '4-5 days', '6+ days'].map((freq, index) => (
-                      <label key={index} className="flex items-center justify-center p-3 border border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 text-sm text-gray-700 dark:text-gray-300 transition-colors" aria-labelledby="frequency-label">
-                        <input type="radio" name="frequency" value={freq} className="mr-2 accent-emerald-600" required aria-label={`Workout frequency: ${freq}`} />
-                        {freq}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" id="workoutTypes-label">Preferred Workout Types</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                      { id: 'strength', label: 'Strength Training', icon: 'ri-sword-line' },
-                      { id: 'cardio', label: 'Cardio', icon: 'ri-heart-pulse-line' },
-                      { id: 'yoga', label: 'Yoga & Flexibility', icon: 'ri-leaf-line' },
-                      { id: 'hiit', label: 'HIIT', icon: 'ri-flashlight-line' }
+                      { id: 'squat', label: 'Squats', icon: 'ri-walk-line', desc: 'Legs & Glutes' },
+                      { id: 'pushup', label: 'Push-ups', icon: 'ri-arrow-down-circle-line', desc: 'Chest & Triceps' },
+                      { id: 'curl', label: 'Bicep Curls', icon: 'ri-boxing-line', desc: 'Biceps' },
+                      { id: 'shoulder_press', label: 'Shoulder Press', icon: 'ri-arrow-up-circle-line', desc: 'Shoulders' }
                     ].map((type) => (
-                      <label key={type.id} className="flex items-center p-3 border border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors" aria-labelledby="workoutTypes-label">
-                        <input type="checkbox" name="workoutTypes" value={type.id} className="mr-3 accent-emerald-600" aria-label={type.label} />
-                        <i className={`${type.icon} text-emerald-600 mr-2`} aria-hidden="true"></i>
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{type.label}</span>
+                      <label 
+                        key={type.id} 
+                        className="group relative flex items-center p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl cursor-pointer border-2 border-transparent hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-400/5 transition-all duration-300"
+                      >
+                        <input type="checkbox" name="workoutTypes" value={type.id} className="peer hidden" aria-label={type.label} />
+                        <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300 mr-4 shadow-sm">
+                          <i className={`${type.icon} text-2xl animate-pulse`}></i>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-bold text-gray-900 dark:text-white">{type.label}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{type.desc}</div>
+                        </div>
+                        <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600 flex items-center justify-center peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all">
+                          <i className="ri-check-line text-white text-sm scale-0 peer-checked:scale-100 transition-transform"></i>
+                        </div>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <button
                     type="button"
                     onClick={() => setShowGetStartedModal(false)}
-                    className="flex-1 border-2 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer"
+                    className="flex-1 px-8 py-4 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
                   >
-                    Cancel
+                    Not now
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer"
-
+                    className="flex-[1.5] bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-3"
                   >
-                    Start My Training
+                    <span>INITIALIZE TRAINING</span>
+                    <i className="ri-arrow-right-line text-xl"></i>
                   </button>
                 </div>
               </form>
             )}
 
-            <div className="mt-4 sm:mt-6 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                By starting your training, you agree to our{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-700 cursor-pointer">Terms of Service</a>
-                {' '}and{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-700 cursor-pointer">Privacy Policy</a>
-              </p>
-            </div>
+            <style>{`
+              @keyframes modalSlideUp {
+                from { opacity: 0; transform: translateY(40px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}</style>
           </div>
         </div>
       )}
     </div>
   )
 }
+
 
 export default Getstarted

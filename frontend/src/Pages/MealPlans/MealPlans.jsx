@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { GOALS, ACTIVITY_LEVELS, DIET_TYPES } from '../../data/mealData';
 import { calculateStats, generateWeeklyPlan } from '../../utils/mealPlanGenerator';
+import { downloadMealPlanAsPDF } from '../../utils/mealPlanPDF';
 import BackButton from '../../components/BackButton';
 
 const createInitialFormData = () => ({
@@ -18,15 +19,8 @@ const createInitialFormData = () => ({
   calorieTarget: 2500,
   numberOfMeals: 4,
   dietaryPreferences: {
-    vegan: false,
     vegetarian: false,
-    eggetarian: false,
-    nonVeg: false,
-    omitNuts: false,
-    highProtein: false,
-    lowCarb: false,
-    keto: false,
-    allergies: []
+    nonVeg: false
   },
   customAllergies: ''
 });
@@ -120,61 +114,34 @@ const MealPlans = () => {
 
   const handleDietaryChange = (field, value) => {
     setFormData(prev => {
-      const newPrefs = { ...prev.dietaryPreferences, [field]: value };
-
-      const primaryDietFields = ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'];
-      if (primaryDietFields.includes(field) && value) {
-        primaryDietFields.forEach((dietField) => {
-          if (dietField !== field) newPrefs[dietField] = false;
-        });
-      }
-
-      if (field === 'keto' && value) { newPrefs.lowCarb = true; }
-      if (field === 'lowCarb' && !value) { newPrefs.keto = false; }
+      const newPrefs = { vegetarian: false, nonVeg: false };
+      newPrefs[field] = value;
       return { ...prev, dietaryPreferences: newPrefs };
     });
   };
 
   const handleGenerate = () => {
-    const plan = generateWeeklyPlan(formData);
-    setGeneratedPlan(plan);
-    setCurrentStep(5);
+    try {
+      console.log('Generating plan with data:', formData);
+      const plan = generateWeeklyPlan(formData);
+      console.log('Generated plan:', plan);
+      if (!plan || plan.length === 0) {
+        throw new Error('Failed to generate plan - empty result');
+      }
+      setGeneratedPlan(plan);
+      setCurrentStep(5);
+      // Refresh AOS to handle new elements
+      setTimeout(() => {
+        AOS.refresh();
+      }, 100);
+    } catch (error) {
+      console.error('Error generating meal plan:', error);
+      alert(`Error generating meal plan: ${error.message || 'Unknown error'}. Please check your inputs or try again.`);
+    }
   };
 
-  // Handle download ( DOWNLOAD MEAL PLAN )
-
   const handleDownload = () => {
-    if (!generatedPlan) return;
-
-    let content = `FitVision AI - Weekly Meal Plan\n`;
-    content += `Goal: ${formData.goal.replace('-', ' ')}\n`;
-    content += `Calories: ${formData.calorieTarget} kcal\n`;
-    content += `Preference: Mid-price ingredient set\n\n`;
-
-    generatedPlan.forEach(day => {
-      content += `----------------------------------------\n`;
-      content += `${day.day} (${day.date})\n`;
-      content += `----------------------------------------\n`;
-      content += `Daily total: ${day.totals.calories} kcal | P: ${day.totals.protein} | C: ${day.totals.carbs} | F: ${day.totals.fat} | Cost: Rs. ${day.totals.estimatedCost}\n\n`;
-      day.meals.forEach(meal => {
-        content += `[${meal.name}] ${meal.title} (${meal.calories} kcal)\n`;
-        content += `   ${meal.description}\n`;
-        content += `   Target: ${meal.targetCalories} kcal | Delta: ${meal.calorieDelta >= 0 ? '+' : ''}${meal.calorieDelta} kcal | Cost: Rs. ${meal.estimatedCost}\n`;
-        content += `   Ingredients: ${meal.ingredients.join(', ')}\n`;
-        content += `   Macros: P: ${meal.macros.protein} | C: ${meal.macros.carbs} | F: ${meal.macros.fat}\n\n`;
-      });
-      content += `\n`;
-    });
-
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `fitvision-meal-plan-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    downloadMealPlanAsPDF(formData, generatedPlan);
   };
 
   const getIconColorClasses = (color) => {
@@ -198,12 +165,21 @@ const MealPlans = () => {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
   };
 
+  const isAgeValid = (age) => age >= 13 && age <= 100;
+  const isHeightValid = (height) => height >= 50 && height <= 250;
+  const isWeightValid = (weight) => weight >= 20 && weight <= 300;
+
   const canProceed = () => {
     switch (currentStep) {
       case 1: return formData.goal !== '';
-      case 2: return formData.age && formData.gender && formData.height && formData.weight && formData.activityLevel;
+      case 2:
+        return formData.age && isAgeValid(formData.age) &&
+          formData.gender &&
+          formData.height && isHeightValid(formData.height) &&
+          formData.weight && isWeightValid(formData.weight) &&
+          formData.activityLevel;
       case 3: return formData.calorieTarget >= 1200 && formData.calorieTarget <= 4000;
-      case 4: return true;
+      case 4: return formData.dietaryPreferences.vegetarian || formData.dietaryPreferences.nonVeg;
       default: return false;
     }
   };
@@ -287,8 +263,20 @@ const MealPlans = () => {
                 <input type="text" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="Your Name" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age *</label>
-                <input type="number" value={formData.age} onChange={(e) => handleInputChange('age', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="e.g., 25" min="13" max="100" onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Age * (13-100)</label>
+                <input
+                  type="number"
+                  value={formData.age}
+                  onChange={(e) => handleInputChange('age', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-all ${formData.age && !isAgeValid(formData.age) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-slate-600 focus:ring-emerald-500'}`}
+                  placeholder="e.g., 25"
+                  min="13"
+                  max="100"
+                  onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                />
+                {formData.age && !isAgeValid(formData.age) && (
+                  <p className="text-xs text-red-500 mt-1">Please enter age between 13 and 100</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender *</label>
@@ -299,12 +287,36 @@ const MealPlans = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Height (cm) *</label>
-                <input type="number" value={formData.height} onChange={(e) => handleInputChange('height', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="e.g., 175" min="1" max="300" onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Height (cm) * (50-250)</label>
+                <input
+                  type="number"
+                  value={formData.height}
+                  onChange={(e) => handleInputChange('height', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-all ${formData.height && !isHeightValid(formData.height) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-slate-600 focus:ring-emerald-500'}`}
+                  placeholder="e.g., 175"
+                  min="50"
+                  max="250"
+                  onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                />
+                {formData.height && !isHeightValid(formData.height) && (
+                  <p className="text-xs text-red-500 mt-1">Please enter height between 50 and 250 cm</p>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight (kg) *</label>
-                <input type="number" value={formData.weight} onChange={(e) => handleInputChange('weight', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="e.g., 75" min="1" max="500" onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Weight (kg) * (20-300)</label>
+                <input
+                  type="number"
+                  value={formData.weight}
+                  onChange={(e) => handleInputChange('weight', e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white transition-all ${formData.weight && !isWeightValid(formData.weight) ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-slate-600 focus:ring-emerald-500'}`}
+                  placeholder="e.g., 75"
+                  min="20"
+                  max="300"
+                  onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                />
+                {formData.weight && !isWeightValid(formData.weight) && (
+                  <p className="text-xs text-red-500 mt-1">Please enter weight between 20 and 300 kg</p>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Activity Level *</label>
@@ -367,24 +379,25 @@ const MealPlans = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sm:p-8 transition-colors duration-300" data-aos="fade-up">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Step 4: Preferences</h2>
 
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Diet Type</h3>
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Choose Your Diet Style</h3>
+              <div className="grid sm:grid-cols-2 gap-6">
                 {DIET_TYPES.map(type => (
-                  <label key={type.id} className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.dietaryPreferences[type.id] ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30' : 'border-gray-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800'}`}>
-                    <input
-                      type="checkbox"
-                      checked={formData.dietaryPreferences[type.id]}
-                      onChange={(e) => handleDietaryChange(type.id, e.target.checked)}
-                      className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                    />
-                    <span className="ml-3 font-medium text-gray-900 dark:text-white capitalize">{type.name}</span>
-                  </label>
+                  <button
+                    key={type.id}
+                    onClick={() => handleDietaryChange(type.id, true)}
+                    className={`flex flex-col items-center p-8 border-2 rounded-2xl transition-all ${formData.dietaryPreferences[type.id] ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30' : 'border-gray-200 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800'}`}
+                  >
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${formData.dietaryPreferences[type.id] ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-500'}`}>
+                      <i className={`${type.id === 'vegetarian' ? 'ri-leaf-line' : 'ri-restaurant-line'} text-3xl`}></i>
+                    </div>
+                    <span className="text-xl font-bold text-gray-900 dark:text-white">{type.name}</span>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 text-center">
+                      {type.id === 'vegetarian' ? 'Plant-based meals including dairy' : 'Includes poultry, meat, and eggs'}
+                    </p>
+                  </button>
                 ))}
               </div>
-              <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                Plans use practical mid-price ingredients first, then adjust portions to stay close to your calorie target.
-              </p>
             </div>
 
 
@@ -406,7 +419,7 @@ const MealPlans = () => {
                 </div>
                 <div className="flex gap-3">
                   <button onClick={handleDownload} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2">
-                    <i className="ri-download-line"></i> <span className="hidden sm:inline">Download</span>
+                    <i className="ri-file-pdf-line"></i> <span className="hidden sm:inline">Download PDF</span>
                   </button>
                   <button onClick={() => { setCurrentStep(1); setGeneratedPlan(null); }} className="px-6 py-2 border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 rounded-lg font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
                     Create New

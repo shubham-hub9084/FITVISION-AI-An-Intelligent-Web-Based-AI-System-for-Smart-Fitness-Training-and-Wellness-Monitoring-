@@ -10,34 +10,28 @@ import sys
 import os
 import time
 
-# Add src directory to path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Add backend directory to path so both `src` and `database` packages are found
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.pose_detector import PoseDetector
+from src.pose_detector    import PoseDetector
 from src.exercise_monitor import ExerciseMonitor
-from src.pose_corrector import PoseCorrector
-from src.safety_alerts import SafetyAlerts
-from src.progress_tracker import ProgressTracker
-from src.coaching_engine import CoachingEngine # [NEW]
+from src.pose_corrector   import PoseCorrector
+from src.safety_alerts    import SafetyAlerts
+from src.coaching_engine  import CoachingEngine
+from database.tracker     import ProgressTracker   # <── new database package
 
 app = Flask(__name__)
 CORS(app)
 
-# Global variables
+# Global variables - these are shared resources or stateless wrappers
 camera = None
 pose_detector = PoseDetector()
-exercise_monitor = None
-pose_corrector = None
 safety_alerts = SafetyAlerts()
 progress_tracker = ProgressTracker()
-coaching_engine = CoachingEngine() # [NEW]
 
-# Session state
-current_exercise = "squat"
-session_start_time = None
-session_active = False
-current_alerts = [] # [NEW] Global variable for alerts
-
+# Session state - now multi-user aware
+# Stores per-user: active status, exercise type, monitors, and coaching engine
+user_sessions = {}
 
 def get_camera():
     """Initialize and return camera"""
@@ -51,7 +45,7 @@ def get_camera():
 
 def generate_frames():
     """Generate video frames with pose detection and feedback"""
-    global exercise_monitor, pose_corrector, session_start_time, session_active, coaching_engine, current_alerts
+    global user_sessions
     
     last_rep_count = 0 
     
@@ -67,33 +61,43 @@ def generate_frames():
         frame, results = pose_detector.find_pose(frame, draw=True)
         landmarks = pose_detector.get_position(frame, results, draw=False)
         
-        if len(landmarks) > 0 and session_active:
-            # Monitor exercise
-            counter, stage = exercise_monitor.monitor_exercise(landmarks)
-            
-            # [NEW] Log Reps to Engine
-            if counter > last_rep_count:
-                coaching_engine.log_rep()
-                last_rep_count = counter
-
-            # Get form feedback
-            feedback = pose_corrector.analyze_form(landmarks)
-            
-            # [NEW] Log Feedback to Engine
-            coaching_engine.log_feedback(feedback)
-            
-            # Check safety
-            alerts = safety_alerts.perform_safety_check(landmarks)
-            current_alerts = alerts # Store globally for API
+        # Identify all active sessions
+        active_uids = [uid for uid, s in user_sessions.items() if s.get('active')]
         
+        if len(landmarks) > 0 and active_uids:
+            # For this single-camera setup, we use the first active session as the primary analyst
+            primary_uid = active_uids[0]
+            primary_sess = user_sessions[primary_uid]
+            
+            # Monitor exercise
+            counter, stage = primary_sess['monitor'].monitor_exercise(landmarks)
+            
+            # Rep tracking & sync to DB
+            if counter > last_rep_count:
+                last_rep_count = counter
+                for uid in active_uids:
+                    user_sessions[uid]['repetitions'] = counter
+                    user_sessions[uid]['engine'].log_rep()
+                    progress_tracker.update_active_session_reps(uid, counter)
 
-        elif not session_active:
-            # Show ready message
-            cv2.putText(frame, "Press START to begin workout", 
-                       (frame.shape[1]//2 - 300, frame.shape[0]//2),
+            # Form & Safety Analysis
+            feedback = primary_sess['corrector'].analyze_form(landmarks)
+            alerts = safety_alerts.perform_safety_check(landmarks)
+            
+            # Sync findings to all active sessions
+            for uid in active_uids:
+                user_sessions[uid]['feedback'] = feedback
+                user_sessions[uid]['alerts'] = alerts
+                user_sessions[uid]['stage'] = stage
+                user_sessions[uid]['engine'].log_feedback(feedback)
+
+        elif not active_uids:
+            # Show ready message when no sessions are active
+            cv2.putText(frame, "Press START from Dashboard", 
+                       (frame.shape[1]//2 - 250, frame.shape[0]//2),
                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
-        # Encode frame
+        # Encode and stream frame
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         
@@ -116,123 +120,177 @@ def video_feed():
 
 @app.route('/api/start_session', methods=['POST'])
 def start_session():
-    """Start workout session"""
-    global exercise_monitor, pose_corrector, session_start_time, session_active, current_exercise, coaching_engine
+    """Start workout session for a specific user"""
+    global user_sessions
     
-    data = request.json
-    current_exercise = data.get('exercise', 'squat')
+    data = request.json or {}
+    ex_id = data.get('exercise', 'squat')
+    user_id = data.get('user_id', 'anonymous')
     
-    exercise_monitor = ExerciseMonitor(current_exercise)
-    pose_corrector = PoseCorrector(current_exercise)
-    coaching_engine.start_session(current_exercise) # [NEW] reset engine
+    # Initialize per-user independent state
+    engine = CoachingEngine()
+    engine.start_session(ex_id)
     
-    session_start_time = time.time()
-    session_active = True
+    user_sessions[user_id] = {
+        "active": True,
+        "exercise": ex_id,
+        "monitor": ExerciseMonitor(ex_id),
+        "corrector": PoseCorrector(ex_id),
+        "engine": engine,
+        "start_time": time.time(),
+        "repetitions": 0,
+        "stage": "Ready",
+        "feedback": ["Ready to start"],
+        "alerts": []
+    }
+    
+    # Track in database
+    progress_tracker.start_active_session(user_id, ex_id)
     
     return jsonify({
         "status": "success",
-        "message": f"Started {current_exercise} session",
-        "exercise": current_exercise
+        "message": f"Started {ex_id} session for {user_id}",
+        "exercise": ex_id,
+        "user_id": user_id
     })
 
 
 @app.route('/api/stop_session', methods=['POST'])
 def stop_session():
-    """Stop workout session and save progress"""
-    global session_start_time, session_active, exercise_monitor, coaching_engine
+    """Stop workout session and save progress for a specific user"""
+    global user_sessions
     
-    if not session_active or not exercise_monitor:
-        return jsonify({"status": "error", "message": "No active session"})
+    data = request.json or {}
+    user_id = data.get('user_id', 'anonymous')
     
-    session_active = False
-    duration = int(time.time() - session_start_time)
-    stats = exercise_monitor.get_stats()
+    sess = user_sessions.get(user_id)
+    if not sess or not sess.get('active'):
+        return jsonify({"status": "error", "message": "No active session for this user"})
     
-    # Save to database
+    sess['active'] = False
+    duration = int(time.time() - sess['start_time'])
+    stats = sess['monitor'].get_stats()
+    
+    # Save workout to DB
     workout_id = progress_tracker.save_workout(
-        exercise_type=current_exercise,
+        user_id=user_id,
+        exercise_type=sess['exercise'],
         repetitions=stats["repetitions"],
         duration=duration
     )
     
-    # [NEW] Generate Report
-    report = coaching_engine.generate_report()
+    # Clear active session in DB
+    progress_tracker.end_active_session(user_id)
     
+    # Generate final report
+    report = sess['engine'].generate_report()
+    
+    # Save unique form errors found during session
+    try:
+        unique_errors = set(sess['engine'].session_errors)
+        for error_msg in unique_errors:
+            # Clean error message for DB storage
+            clean_error = error_msg.replace("⚠️ ", "").split(":")[0].strip()
+            progress_tracker.log_form_error(
+                user_id=user_id,
+                workout_id=workout_id,
+                error_type=clean_error,
+                message=error_msg,
+                severity="warning"
+            )
+    except Exception as e:
+        print(f"Error saving session form errors: {e}")
+
     return jsonify({
         "status": "success",
         "message": "Session saved",
         "workout_id": workout_id,
         "stats": {
-            "exercise": current_exercise,
+            "exercise": sess['exercise'],
             "repetitions": stats["repetitions"],
             "duration": duration
         },
-        "report": report # [NEW] Send report to frontend
+        "report": report
     })
 
 
 @app.route('/api/reset_counter', methods=['POST'])
 def reset_counter():
-    """Reset exercise counter"""
-    global exercise_monitor
+    """Reset exercise counter for a specific user"""
+    data = request.json or {}
+    user_id = data.get('user_id', 'anonymous')
+    sess = user_sessions.get(user_id)
     
-    if exercise_monitor:
-        exercise_monitor.reset_counter()
+    if sess and sess.get('active'):
+        sess['monitor'].reset_counter()
+        sess['repetitions'] = 0
         return jsonify({"status": "success", "message": "Counter reset"})
     
     return jsonify({"status": "error", "message": "No active session"})
 
 
-@app.route('/api/current_stats')
-def current_stats():
-    """Get current session statistics"""
-    if not session_active or not exercise_monitor:
+@app.route('/api/current_stats', methods=['GET'])
+def get_current_stats():
+    """Get real-time session statistics for a specific user"""
+    user_id = request.args.get('user_id', 'anonymous')
+    sess = user_sessions.get(user_id)
+    
+    if sess and sess.get('active'):
         return jsonify({
-            "active": False,
-            "exercise": current_exercise
+            "active": True,
+            "exercise": sess['exercise'],
+            "repetitions": sess['repetitions'],
+            "stage": sess.get('stage', 'Ready'),
+            "feedback": sess.get('feedback', []),
+            "alerts": sess.get('alerts', [])
         })
     
-    stats = exercise_monitor.get_stats()
-    duration = int(time.time() - session_start_time) if session_start_time else 0
-    
-    return jsonify({
-        "active": True,
-        "exercise": current_exercise,
-        "repetitions": stats["repetitions"],
-        "stage": stats["stage"],
-        "duration": duration,
-        "feedback": pose_corrector.feedback if pose_corrector else [],
-        "alerts": current_alerts # [NEW] Return alerts to frontend
-    })
+    return jsonify({"active": False})
 
 
 @app.route('/api/progress')
 def get_progress():
-    """Get workout progress history"""
+    """Get workout progress history and totals for a specific user"""
+    user_id = request.args.get('user_id', None)
     exercise = request.args.get('exercise', None)
     limit = int(request.args.get('limit', 10))
     
-    history = progress_tracker.get_workout_history(exercise, limit)
-    total_stats = progress_tracker.get_total_stats()
-    achievements = progress_tracker.get_achievements()
-    improvements = progress_tracker.get_exercise_improvements()
-    total_errors = progress_tracker.get_total_errors()
+    history = progress_tracker.get_workout_history(user_id, exercise, limit)
+    total_stats = progress_tracker.get_total_stats(user_id)
+    achievements = progress_tracker.get_achievements(user_id)
+    improvements = progress_tracker.get_exercise_improvements(user_id)
+    total_errors = progress_tracker.get_total_errors(user_id)
+    today_errors = progress_tracker.get_today_errors(user_id)
+    errors_by_workout = progress_tracker.get_errors_by_workout(user_id)
     
     return jsonify({
         "history": history,
         "total_stats": total_stats,
         "achievements": achievements,
         "improvements": improvements,
-        "total_errors": total_errors
+        "total_errors": total_errors,
+        "today_errors": today_errors,
+        "errors_by_workout": errors_by_workout
     })
+
+
+@app.route('/api/chart_data')
+def get_chart_data():
+    """Get multi-exercise progress data for dashboard charts"""
+    user_id = request.args.get('user_id', None)
+    days = int(request.args.get('days', 7))
+    
+    data = progress_tracker.get_chart_data(user_id, days)
+    return jsonify(data)
 
 
 @app.route('/api/exercise_stats/<exercise_type>')
 def get_exercise_stats(exercise_type):
-    """Get statistics for specific exercise"""
-    stats = progress_tracker.get_exercise_stats(exercise_type)
-    recent = progress_tracker.get_recent_progress(exercise_type, days=7)
-    personal_best = progress_tracker.get_personal_best(exercise_type)
+    """Get historical statistics for a specific exercise and user"""
+    user_id = request.args.get('user_id', None)
+    stats = progress_tracker.get_exercise_stats(exercise_type, user_id)
+    recent = progress_tracker.get_recent_progress(exercise_type, user_id, days=7)
+    personal_best = progress_tracker.get_personal_best(exercise_type, user_id)
     
     return jsonify({
         "stats": stats,
@@ -241,15 +299,9 @@ def get_exercise_stats(exercise_type):
     })
 
 
-@app.route('/dashboard')
-def dashboard():
-    """Progress dashboard page"""
-    return render_template('dashboard.html')
-
-
 @app.route('/api/exercises')
 def get_exercises():
-    """Get list of supported exercises"""
+    """Get list of all supported workout types"""
     exercises = [
         {"id": "squat", "name": "Squats", "description": "Lower body strength"},
         {"id": "pushup", "name": "Push-ups", "description": "Upper body strength"},
@@ -260,6 +312,6 @@ def get_exercises():
 
 
 if __name__ == '__main__':
-    print("🏋️ Starting AI Fitness Trainer...")
-    print("📱 Open http://localhost:5000 in your browser")
+    print("🏋️ Starting AI Fitness Trainer Backend...")
+    print("📱 Dashboard available at: http://localhost:5000/dashboard")
     app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)

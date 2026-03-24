@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 @variant dark (&:where(.dark, .dark *));
 
-html {}
+
 
 @layer utilities {
   .animate-fade-in {
@@ -86,8 +86,34 @@ html {}
 }
 
 html {
-  /* scroll-behavior: smooth; Avoid conflict via duplicate */
+  scroll-behavior: smooth;
   overflow-x: hidden;
+}
+
+/* Custom slim scrollbar - emerald themed */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 99px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #10b981 transparent;
 }
 
 body {

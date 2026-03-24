@@ -1,9 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import config from '../../config';
 import { playBeep } from '../../utils/soundUtils';
 
-const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
+const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId }) => {
     const [exercises, setExercises] = useState([]);
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [permissionGranted, setPermissionGranted] = useState(true);
@@ -32,6 +32,14 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
         fetchExercises();
     }, []);
 
+    // Auto-start session when an exercise ID is pre-selected from the workout card
+    useEffect(() => {
+        if (initialExerciseId) {
+            startSession(initialExerciseId);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialExerciseId]);
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -45,7 +53,10 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
             const response = await fetch(`${config.API_BASE_URL}/api/start_session`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exercise: exerciseId })
+                body: JSON.stringify({ 
+                    exercise: exerciseId,
+                    user_id: user_id 
+                })
             });
             const data = await response.json();
             if (data.status === 'success') {
@@ -60,7 +71,11 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
 
     const stopSession = async () => {
         try {
-            const response = await fetch(`${config.API_BASE_URL}/api/stop_session`, { method: 'POST' });
+            const response = await fetch(`${config.API_BASE_URL}/api/stop_session`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id })
+            });
             const data = await response.json();
 
             if (data.status === 'success') {
@@ -83,7 +98,11 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
 
     const resetCounter = async () => {
         try {
-            await fetch(`${config.API_BASE_URL}/api/reset_counter`, { method: 'POST' });
+            await fetch(`${config.API_BASE_URL}/api/reset_counter`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id })
+            });
             setRepCount(0);
             setFeedback("Counter Reset");
         } catch (error) {
@@ -96,8 +115,9 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
         if (!sessionActive) return;
 
         const interval = setInterval(async () => {
+            if (!user_id) return;
             try {
-                const response = await fetch(`${config.API_BASE_URL}/api/current_stats`);
+                const response = await fetch(`${config.API_BASE_URL}/api/current_stats?user_id=${user_id}`);
                 const data = await response.json();
 
                 if (data.active) {
@@ -122,7 +142,7 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
         }, 500);
 
         return () => clearInterval(interval);
-    }, [sessionActive, prevRepCount, selectedExercise]);
+    }, [sessionActive, prevRepCount, selectedExercise, user_id]);
 
     // Sound and Visual effects when reps increase
     useEffect(() => {
@@ -131,12 +151,6 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
         }
     }, [repCount]);
 
-    // Sound for feedback (optional, maybe just for specific words like "Incorrect")
-    useEffect(() => {
-        if (feedback && (feedback.toLowerCase().includes('wrong') || feedback.toLowerCase().includes('incorrect') || feedback.toLowerCase().includes('adjust'))) {
-            // playBeep('warning'); // Optional: might be too annoying if frequent
-        }
-    }, [feedback]);
 
 
     // 1. Exercise Selection Screen
@@ -190,7 +204,7 @@ const CameraWorkout = ({ onClose, onWorkoutComplete }) => {
                     <div className="w-full max-w-md bg-gray-900 rounded-2xl p-6 border border-gray-800 text-center">
                         <div className="mb-6">
                             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 border-4 border-emerald-500 mb-4">
-                                <span className="text-3xl font-bold text-emerald-500">{reportData.score}</span>
+                                <i className="ri-check-line text-4xl text-emerald-500"></i>
                             </div>
                             <h2 className="text-2xl font-bold text-white mb-2">Session Complete!</h2>
                             <p className="text-gray-400 text-sm">{reportData.summary}</p>

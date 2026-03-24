@@ -12,7 +12,7 @@ const menuLinks = [
   { name: "Home", to: "home" },
   { name: "Features", to: "features" },
   { name: "How It Works", to: "how-it-works" },
-  { name: "Pricing", to: "pricing" },
+
   { name: "Reviews", to: "testimonials" },
   { name: "Contact", to: "contact" },
 ];

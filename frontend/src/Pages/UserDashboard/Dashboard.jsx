@@ -14,7 +14,6 @@ import { useAuth } from "../../context/AuthContext";
 const UserDashboard = () => {
     const [showCameraWorkout, setShowCameraWorkout] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
-    const [selectedTimeframe, setSelectedTimeframe] = useState("week");
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -27,12 +26,15 @@ const UserDashboard = () => {
         totalTime: 0,
         caloriesBurned: 0,
         totalErrors: 0,
-        improvements: []
+        todayErrors: 0,
+        improvements: [],
+        errorsByWorkout: {}
     });
 
     const loadDashboardData = async () => {
+        if (!user?.id) return;
         try {
-            const response = await fetch("http://localhost:5000/api/progress");
+            const response = await fetch(`http://localhost:5000/api/progress?user_id=${user.id}`);
             const data = await response.json();
 
             if (data.total_stats) {
@@ -41,7 +43,9 @@ const UserDashboard = () => {
                     totalTime: Math.round((data.total_stats.total_duration || 0) / 60),
                     caloriesBurned: Math.round((data.total_stats.total_reps || 0) * 0.5),
                     totalErrors: data.total_errors || 0,
-                    improvements: data.improvements || []
+                    todayErrors: data.today_errors || 0,
+                    improvements: data.improvements || [],
+                    errorsByWorkout: data.errors_by_workout || {}
                 });
             }
             if (data.achievements) {
@@ -53,13 +57,16 @@ const UserDashboard = () => {
     };
 
     useEffect(() => {
-        loadDashboardData();
-    }, []);
+        if (user?.id) {
+            loadDashboardData();
+        }
+    }, [user?.id]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
             {showCameraWorkout && (
                 <CameraWorkout
+                    user_id={user?.id}
                     onClose={() => setShowCameraWorkout(false)}
                     onWorkoutComplete={loadDashboardData}
                 />
@@ -92,10 +99,6 @@ const UserDashboard = () => {
                             >
                                 <i className="ri-camera-line text-lg"></i>
                                 Start AI Workout
-                            </button>
-                            <button className="border-2 border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white px-6 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer flex items-center gap-2">
-                                <i className="ri-play-line"></i>
-                                Quick Start
                             </button>
                         </div>
                     </div>
@@ -148,9 +151,8 @@ const UserDashboard = () => {
 
                 {activeTab === "progress" && (
                     <Progress
-                        selectedTimeframe={selectedTimeframe}
-                        setSelectedTimeframe={setSelectedTimeframe}
                         currentData={currentData}
+                        user_id={user?.id}
                     />
                 )}
 

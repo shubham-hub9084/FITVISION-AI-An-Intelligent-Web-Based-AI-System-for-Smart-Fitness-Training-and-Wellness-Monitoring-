@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGeminiResponse } from '../../services/aiService';
 import { Bot, Send, X, MessageSquare, Sparkles, User } from 'lucide-react';
-import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -45,22 +44,20 @@ const Chatbot = () => {
         setIsLoading(false);
     };
 
-    // Chatbot Toggle Button
-    // We'll keep the floating button logic but use Lucide icons
-    // The Modal will use AIChatCard's structure
-
     return (
         <>
-            <div className="fixed bottom-6 right-6 z-50">
+            {/* Toggle Button — always on top */}
+            <div className="fixed bottom-20 right-6 z-[9999]">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 flex items-center justify-center group"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group"
                     aria-label="Toggle Chatbot"
                 >
                     {isOpen ? <X className="w-7 h-7" /> : <MessageSquare className="w-7 h-7 group-hover:-rotate-12 transition-transform" />}
                 </button>
             </div>
 
+            {/* Chat Panel */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -68,117 +65,123 @@ const Chatbot = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className={cn("fixed bottom-24 right-6 w-[360px] h-[500px] rounded-2xl overflow-hidden p-[2px] z-50 shadow-2xl")}
+                        className="fixed bottom-36 right-6 w-[360px] h-[500px] z-[9999] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                        style={{ border: '1px solid rgba(16,185,129,0.3)' }}
                     >
-                        {/* Animated Outer Border (from AIChatCard) */}
-                        <motion.div
-                            className="absolute inset-0 rounded-2xl border-2 border-white/20 pointer-events-none"
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                        />
+                        {/* Solid dark background — always fully opaque */}
+                        <div className="absolute inset-0 bg-gray-950 rounded-2xl" />
 
-                        {/* Inner Card content */}
-                        <div className="relative flex flex-col w-full h-full rounded-xl border border-white/10 overflow-hidden bg-black/90 backdrop-blur-xl">
-                            {/* Inner Animated Background */}
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-br from-gray-800 via-black to-gray-900"
-                                animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                style={{ backgroundSize: "200% 200%" }}
-                            />
+                        {/* Subtle top glow accent */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-400 to-blue-500 rounded-t-2xl" />
 
-                            {/* Floating Particles */}
-                            {Array.from({ length: 20 }).map((_, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="absolute w-1 h-1 rounded-full bg-white/10"
-                                    animate={{
-                                        y: ["0%", "-140%"],
-                                        x: [Math.random() * 200 - 100, Math.random() * 200 - 100],
-                                        opacity: [0, 1, 0],
-                                    }}
-                                    transition={{
-                                        duration: 5 + Math.random() * 3,
-                                        repeat: Infinity,
-                                        delay: i * 0.5,
-                                        ease: "easeInOut",
-                                    }}
-                                    style={{ left: `${Math.random() * 100}%`, bottom: "-10%" }}
-                                />
-                            ))}
-
+                        {/* Content wrapper — all z-10 to be above background */}
+                        <div className="relative z-10 flex flex-col w-full h-full">
 
                             {/* Header */}
-                            <div className="px-4 py-3 border-b border-white/10 relative z-10 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Bot className="w-5 h-5 text-emerald-400" />
+                            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-800">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                        <Bot className="w-4 h-4 text-emerald-400" />
+                                    </div>
                                     <div>
-                                        <h3 className="font-bold text-white text-lg leading-tight">FitVision AI</h3>
-                                        <p className="text-emerald-100/70 text-xs">Always here to help</p>
+                                        <h3 className="font-bold text-white text-sm leading-tight">FitVision AI</h3>
+                                        <p className="text-emerald-300 text-xs font-medium">Always here to help</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white transition-colors">
+                                <button
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                                >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
                             {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative z-10">
+                            <div
+                                className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+                                style={{ scrollbarWidth: 'thin', scrollbarColor: '#10b981 transparent' }}
+                            >
                                 {messages.map((msg) => (
                                     <motion.div
                                         key={msg.id}
-                                        initial={{ opacity: 0, y: 10 }}
+                                        initial={{ opacity: 0, y: 8 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                                        transition={{ duration: 0.2 }}
+                                        className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
-                                        <div className={cn(
-                                            "px-3 py-2 rounded-xl max-w-[85%] shadow-md backdrop-blur-md flex items-start gap-2",
-                                            msg.sender === 'bot'
-                                                ? "bg-white/10 text-white self-start"
-                                                : "bg-emerald-500/20 text-white border border-emerald-500/30 self-end"
-                                        )}>
-                                            {msg.sender === 'bot' && <Sparkles className="w-4 h-4 mt-1 text-emerald-400 shrink-0" />}
-                                            <div className="text-sm leading-relaxed overflow-hidden break-words prose prose-invert max-w-none prose-p:leading-snug prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-a:text-emerald-400">
-                                                {msg.sender === 'bot' ? (
+                                        {msg.sender === 'bot' && (
+                                            <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-1">
+                                                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                                            </div>
+                                        )}
+
+                                        <div
+                                            className={`px-3 py-2.5 rounded-2xl max-w-[78%] text-sm leading-relaxed ${
+                                                msg.sender === 'bot'
+                                                    ? 'bg-gray-800 text-gray-100 rounded-tl-sm'
+                                                    : 'bg-emerald-600 text-white rounded-tr-sm'
+                                            } ${msg.isError ? 'bg-red-900/40 text-red-300' : ''}`}
+                                        >
+                                            {msg.sender === 'bot' ? (
+                                                <div className="prose prose-sm prose-invert max-w-none
+                                                    [&_p]:text-gray-100 [&_p]:mb-2 [&_p:last-child]:mb-0
+                                                    [&_strong]:text-white [&_em]:text-emerald-300
+                                                    [&_ul]:text-gray-200 [&_ol]:text-gray-200
+                                                    [&_li]:text-gray-200 [&_li]:mb-1
+                                                    [&_code]:text-emerald-300 [&_code]:bg-black/40 [&_code]:px-1 [&_code]:rounded
+                                                    [&_pre]:bg-black/50 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:overflow-x-auto
+                                                    [&_a]:text-emerald-400 [&_a]:underline
+                                                    [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white">
                                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                                         {msg.text}
                                                     </ReactMarkdown>
-                                                ) : (
-                                                    <span className="whitespace-pre-wrap break-words">{msg.text}</span>
-                                                )}
-                                            </div>
-                                            {msg.sender === 'user' && <User className="w-4 h-4 mt-1 text-emerald-400 shrink-0" />}
+                                                </div>
+                                            ) : (
+                                                <span className="text-white">{msg.text}</span>
+                                            )}
                                         </div>
+
+                                        {msg.sender === 'user' && (
+                                            <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 mt-1">
+                                                <User className="w-3.5 h-3.5 text-white" />
+                                            </div>
+                                        )}
                                     </motion.div>
                                 ))}
+
+                                {/* Typing indicator */}
                                 {isLoading && (
-                                    <motion.div
-                                        className="flex items-center gap-1 px-3 py-2 rounded-xl max-w-[30%] bg-white/10 self-start"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: [0, 1, 0.6, 1] }}
-                                        transition={{ repeat: Infinity, duration: 1.2 }}
-                                    >
-                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse delay-200"></span>
-                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse delay-400"></span>
-                                    </motion.div>
+                                    <div className="flex gap-2 justify-start">
+                                        <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                                        </div>
+                                        <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-gray-800 flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                        </div>
+                                    </div>
                                 )}
+
                                 <div ref={messagesEndRef} />
                             </div>
 
                             {/* Input Area */}
-                            <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 relative z-10 flex items-center gap-2">
+                            <form
+                                onSubmit={handleSendMessage}
+                                className="px-4 py-3 border-t border-white/10 flex items-center gap-2 shrink-0 bg-slate-800"
+                            >
                                 <input
                                     type="text"
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     placeholder="Ask about workouts, diet..."
-                                    className="flex-1 px-3 py-2 text-sm bg-black/50 rounded-lg border border-white/10 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 placeholder:text-gray-500 transition-all"
+                                    className="flex-1 px-4 py-2.5 text-sm bg-gray-800 rounded-xl border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!inputText.trim() || isLoading}
-                                    className="p-2 rounded-lg bg-white/10 hover:bg-emerald-500/20 text-white hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="w-10 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
                                 >
                                     <Send className="w-4 h-4" />
                                 </button>

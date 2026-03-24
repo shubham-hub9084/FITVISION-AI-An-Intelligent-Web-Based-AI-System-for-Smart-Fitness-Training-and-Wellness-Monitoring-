@@ -1,0 +1,185 @@
+{
+    "squat": {
+        "accuracy": 1.0,
+        "report": {
+            "0": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 982.0
+            },
+            "1": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 1018.0
+            },
+            "accuracy": 1.0,
+            "macro avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 2000.0
+            },
+            "weighted avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 2000.0
+            }
+        },
+        "confusion_matrix": [
+            [
+                982,
+                0
+            ],
+            [
+                0,
+                1018
+            ]
+        ],
+        "samples": 2000,
+        "features": [
+            "knee_angle",
+            "hip_angle",
+            "back_angle"
+        ]
+    },
+    "pushup": {
+        "accuracy": 1.0,
+        "report": {
+            "0": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 6000.0
+            },
+            "1": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 4000.0
+            },
+            "accuracy": 1.0,
+            "macro avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 10000.0
+            },
+            "weighted avg": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1-score": 1.0,
+                "support": 10000.0
+            }
+        },
+        "confusion_matrix": [
+            [
+                6000,
+                0
+            ],
+            [
+                0,
+                4000
+            ]
+        ],
+        "samples": 10000,
+        "features": [
+            "elbow_angle",
+            "body_alignment"
+        ]
+    },
+    "curl": {
+        "accuracy": 0.9998,
+        "report": {
+            "0": {
+                "precision": 0.9996667777407531,
+                "recall": 1.0,
+                "f1-score": 0.9998333611064822,
+                "support": 6000.0
+            },
+            "1": {
+                "precision": 1.0,
+                "recall": 0.9995,
+                "f1-score": 0.9997499374843711,
+                "support": 4000.0
+            },
+            "accuracy": 0.9998,
+            "macro avg": {
+                "precision": 0.9998333888703765,
+                "recall": 0.99975,
+                "f1-score": 0.9997916492954266,
+                "support": 10000.0
+            },
+            "weighted avg": {
+                "precision": 0.9998000666444518,
+                "recall": 0.9998,
+                "f1-score": 0.9997999916576379,
+                "support": 10000.0
+            }
+        },
+        "confusion_matrix": [
+            [
+                6000,
+                0
+            ],
+            [
+                2,
+                3998
+            ]
+        ],
+        "samples": 10000,
+        "features": [
+            "elbow_angle",
+            "hip_angle",
+            "shoulder_flexion"
+        ]
+    },
+    "shoulder_press": {
+        "accuracy": 0.9995,
+        "report": {
+            "0": {
+                "precision": 0.9993336665000833,
+                "recall": 0.9998333333333334,
+                "f1-score": 0.9995834374739648,
+                "support": 6000.0
+            },
+            "1": {
+                "precision": 0.9997498123592694,
+                "recall": 0.999,
+                "f1-score": 0.9993747655370764,
+                "support": 4000.0
+            },
+            "accuracy": 0.9995,
+            "macro avg": {
+                "precision": 0.9995417394296764,
+                "recall": 0.9994166666666666,
+                "f1-score": 0.9994791015055207,
+                "support": 10000.0
+            },
+            "weighted avg": {
+                "precision": 0.9995001248437576,
+                "recall": 0.9995,
+                "f1-score": 0.9994999686992094,
+                "support": 10000.0
+            }
+        },
+        "confusion_matrix": [
+            [
+                5999,
+                1
+            ],
+            [
+                4,
+                3996
+            ]
+        ],
+        "samples": 10000,
+        "features": [
+            "hip_angle",
+            "r_angle",
+            "l_angle"
+        ]
+    }
+}

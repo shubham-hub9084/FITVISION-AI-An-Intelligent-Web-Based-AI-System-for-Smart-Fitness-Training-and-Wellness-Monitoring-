@@ -87,6 +87,26 @@ const generateDailyMeals = (formData, dayIndex, mealConfigs) => {
     return mealConfigs.map((config, mealIndex) => {
         const targetCalories = Math.round(Number(formData.calorieTarget || 2000) * config.ratio);
         const recipe = selectRecipe(config.type, prefs, goalData, targetCalories, dayIndex, mealIndex);
+
+        if (!recipe) {
+            // Fallback meal if no recipe could be found
+            return {
+                time: config.time,
+                name: config.label || config.type,
+                title: 'Meal not available',
+                calories: targetCalories,
+                targetCalories,
+                calorieDelta: 0,
+                ingredients: [],
+                description: 'No recipe available for this meal slot.',
+                macros: { protein: '0g', carbs: '0g', fat: '0g' },
+                estimatedCost: 0,
+                priceTier: 'mid',
+                icon: config.icon,
+                color: config.color
+            };
+        }
+
         const { entries, totals } = buildMealEntries(recipe, targetCalories);
         const calorieDelta = Math.round(totals.calories - targetCalories);
 
@@ -113,19 +133,30 @@ const generateDailyMeals = (formData, dayIndex, mealConfigs) => {
 };
 
 const selectRecipe = (mealType, prefs, goalData, targetCalories, dayIndex, mealIndex) => {
-    const candidates = (RECIPE_TEMPLATES[mealType] || []).filter((recipe) => recipeMatchesPreferences(recipe, prefs));
-    const pool = getPreferredPricePool(candidates);
+    const allRecipes = RECIPE_TEMPLATES[mealType] || [];
+    const candidates = allRecipes.filter((recipe) => recipeMatchesPreferences(recipe, prefs));
 
-    const ranked = pool
+    // Fallback: if no matching candidates, use all recipes for this meal type
+    const pool = getPreferredPricePool(candidates.length > 0 ? candidates : allRecipes);
+    const validPool = pool.length > 0 ? pool : allRecipes;
+
+    if (validPool.length === 0) {
+        console.error(`No recipes found for mealType: ${mealType}`);
+        return null;
+    }
+
+    const ranked = validPool
         .map((recipe) => ({ recipe, score: scoreRecipe(recipe, prefs, goalData, targetCalories) }))
         .sort((left, right) => right.score - left.score)
         .map((item) => item.recipe);
 
     const shortlist = ranked.slice(0, Math.min(3, ranked.length));
-    return shortlist[(dayIndex + mealIndex) % shortlist.length] || ranked[0] || RECIPE_TEMPLATES[mealType][0];
+    const idx = shortlist.length > 0 ? (dayIndex + mealIndex) % shortlist.length : 0;
+    return shortlist[idx] || ranked[0] || allRecipes[0];
 };
 
 const getPreferredPricePool = (recipes) => {
+    if (!recipes || recipes.length === 0) return [];
     const midTier = recipes.filter((recipe) => recipe.priceTier === DEFAULT_PRICE_PREFERENCE);
     if (midTier.length) {
         return midTier;
@@ -150,13 +181,17 @@ const recipeMatchesPreferences = (recipe, prefs) => {
         return false;
     }
 
-    const blockedAllergens = new Set(normalizeAllergies(prefs.allergies));
+    const blockedAllergens = new Set(normalizeAllergies(prefs.allergies || []));
     if (prefs.omitNuts) {
         blockedAllergens.add('nuts');
     }
 
     return recipe.ingredients.every((ingredient) => {
         const food = FOOD_ITEMS[ingredient.foodId];
+        if (!food) {
+            console.warn(`Missing food item: ${ingredient.foodId} in recipe ${recipe.id}`);
+            return false;
+        }
         return !food.allergens.some((allergen) => blockedAllergens.has(allergen));
     });
 };
@@ -199,10 +234,20 @@ const scoreRecipe = (recipe, prefs, goalData, targetCalories) => {
 };
 
 const buildMealEntries = (recipe, targetCalories) => {
-    const baseEntries = recipe.ingredients.map((ingredient) => ({
-        ...ingredient,
-        food: FOOD_ITEMS[ingredient.foodId]
-    }));
+    if (!recipe || !recipe.ingredients) {
+        console.error('Invalid recipe passed to buildMealEntries:', recipe);
+        return { entries: [], totals: { calories: 0, protein: 0, carbs: 0, fat: 0, estimatedCost: 0 } };
+    }
+    const baseEntries = recipe.ingredients.map((ingredient) => {
+        const food = FOOD_ITEMS[ingredient.foodId];
+        if (!food) {
+            console.warn(`Missing food item: ${ingredient.foodId} during buildMealEntries for recipe ${recipe.id}`);
+        }
+        return {
+            ...ingredient,
+            food: food || { name: 'Unknown', calories: 0, macros: { protein: 0, carbs: 0, fat: 0 }, estimatedCost: 0, serving: { amount: 1, unit: 'unit' } }
+        };
+    });
     const baseTotals = calculateTotals(baseEntries);
     const scaleFactor = clamp(targetCalories / Math.max(baseTotals.calories, 1), 0.75, 2.6);
 
@@ -323,28 +368,13 @@ const formatIngredient = (entry) => {
 };
 
 const normalizePreferences = (prefs = {}) => ({
-    vegan: Boolean(prefs.vegan),
     vegetarian: Boolean(prefs.vegetarian),
-    eggetarian: Boolean(prefs.eggetarian),
-    nonVeg: Boolean(prefs.nonVeg ?? prefs['non-veg']),
-    highProtein: Boolean(prefs.highProtein ?? prefs['high-protein']),
-    lowCarb: Boolean(prefs.lowCarb ?? prefs['low-carb']),
-    keto: Boolean(prefs.keto),
-    omitNuts: Boolean(prefs.omitNuts),
-    allergies: Array.isArray(prefs.allergies) ? prefs.allergies : []
+    nonVeg: Boolean(prefs.nonVeg)
 });
 
 const resolveDietProfile = (prefs) => {
-    if (prefs.vegan) {
-        return 'vegan';
-    }
-
     if (prefs.vegetarian) {
         return 'vegetarian';
-    }
-
-    if (prefs.eggetarian) {
-        return 'eggetarian';
     }
 
     return 'nonVeg';

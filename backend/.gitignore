@@ -27,6 +27,7 @@ wheels/
 venv/
 ENV/
 env/
+ai_env/
 
 # IDE
 .vscode/
@@ -38,6 +39,9 @@ env/
 # Data and Models
 data/*.db
 data/*.csv
+database/*.db
+database/*.sqlite
+database/*.sqlite3
 models/*.pkl
 models/*.h5
 

@@ -3,9 +3,11 @@ Safety Alert Module
 Detects dangerous postures and triggers warnings
 """
 
-from pose_detector import PoseDetector
+try:
+    from src.pose_detector import PoseDetector
+except ImportError:
+    from pose_detector import PoseDetector
 import time
-
 
 class SafetyAlerts:
     """

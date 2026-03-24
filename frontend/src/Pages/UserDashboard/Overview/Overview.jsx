@@ -75,13 +75,13 @@ const Overview = ({ currentData, setShowCameraWorkout, achievements }) => {
                             <i className="ri-error-warning-line text-red-600 dark:text-red-400"></i>
                         </div>
                         <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-                            Total Actionable
+                            Today: {currentData.todayErrors}
                         </span>
                     </div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">
                         {currentData.totalErrors}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Form Errors</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Form Errors</div>
                 </motion.div>
             </div>
 

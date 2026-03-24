@@ -40,7 +40,7 @@ class CoachingEngine:
         # Calculate Score
         # Simple algorithm: 100 - (errors / reps * weight)
         # Cap errors per rep at 1.
-        error_count = len(self.session_errors)
+        error_count = len(set(self.session_errors))
         # Heuristic: 1 error per rep = 50% score? 
         # let's say score = 100 - (errors * 5). Min 0.
         raw_score = 100 - (error_count * 2) 

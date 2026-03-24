@@ -30,7 +30,7 @@ const Navbar = () => {
         { name: "Home", to: "home", type: "scroll" },
         { name: "Features", to: "features", type: "scroll" },
         { name: "How It Works", to: "how-it-works", type: "scroll" },
-        { name: "Pricing", to: "pricing", type: "scroll" },
+        { name: "Reviews", to: "testimonials", type: "scroll" },
         { name: "Reviews", to: "testimonials", type: "scroll" },
         { name: "Contact", to: "contact", type: "scroll" },
     ];
@@ -39,8 +39,8 @@ const Navbar = () => {
     const appLinks = [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Workouts", path: "/workouts" },
-        { name: "Meal Plans", path: "/meal-plans" },
         { name: "Calories Calculator", path: "/calories-calculator" },
+        { name: "Meal Plans", path: "/meal-plans" },
         { name: "BMI Calculator", path: "/bmi-calculator" },
     ];
 

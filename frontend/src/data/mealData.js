@@ -35,14 +35,8 @@ export const ACTIVITY_LEVELS = [
 ];
 
 export const DIET_TYPES = [
-    { id: 'vegetarian', name: 'Vegetarian' },
-    { id: 'vegan', name: 'Vegan' },
-    { id: 'eggetarian', name: 'Eggetarian' },
-    { id: 'nonVeg', name: 'Non-Vegetarian' },
-    { id: 'highProtein', name: 'High Protein' },
-    { id: 'lowCarb', name: 'Low Carb' },
-    { id: 'keto', name: 'Keto' },
-    { id: 'omitNuts', name: 'Nut Free' }
+    { id: 'vegetarian', name: 'Vegetarian (Veg)' },
+    { id: 'nonVeg', name: 'Non-Vegetarian (Non-Veg)' }
 ];
 
 export const DEFAULT_PRICE_PREFERENCE = 'mid';
@@ -59,7 +53,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 8,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: [],
         tags: ['highProtein', 'highFiber']
@@ -75,7 +69,7 @@ export const FOOD_ITEMS = {
         max: 5,
         estimatedCost: 10,
         priceTier: 'mid',
-        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
         allergens: ['dairy'],
         tags: ['balanced']
@@ -91,7 +85,7 @@ export const FOOD_ITEMS = {
         max: 3,
         estimatedCost: 18,
         priceTier: 'mid',
-        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: ['dairy'],
         tags: ['balanced']
@@ -107,7 +101,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 22,
         priceTier: 'mid',
-        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
         allergens: ['dairy'],
         tags: ['highProtein', 'lowCarb', 'keto']
@@ -123,7 +117,7 @@ export const FOOD_ITEMS = {
         max: 5,
         estimatedCost: 22,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
         allergens: ['soy'],
         tags: ['highProtein', 'lowCarb']
@@ -139,7 +133,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 8,
         priceTier: 'mid',
-        dietProfiles: ['eggetarian', 'nonVeg'],
+        dietProfiles: ['nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
         allergens: ['eggs'],
         tags: ['highProtein', 'lowCarb', 'keto']
@@ -171,7 +165,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 12,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['highProtein', 'highFiber']
@@ -187,7 +181,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 14,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced', 'highFiber']
@@ -203,7 +197,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 14,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced', 'highFiber']
@@ -219,7 +213,7 @@ export const FOOD_ITEMS = {
         max: 5,
         estimatedCost: 11,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner', 'Snack'],
         allergens: ['soy'],
         tags: ['highProtein', 'lowCarb']
@@ -235,7 +229,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 8,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: ['gluten'],
         tags: ['balanced']
@@ -251,7 +245,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 12,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced', 'highFiber']
@@ -267,7 +261,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 10,
         priceTier: 'budget',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced']
@@ -283,7 +277,7 @@ export const FOOD_ITEMS = {
         max: 3,
         estimatedCost: 30,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch'],
         allergens: [],
         tags: ['balanced']
@@ -299,7 +293,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 6,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: ['gluten'],
         tags: ['balanced']
@@ -315,7 +309,7 @@ export const FOOD_ITEMS = {
         max: 5,
         estimatedCost: 10,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced']
@@ -331,7 +325,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 12,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast'],
         allergens: ['gluten'],
         tags: ['balanced', 'highFiber']
@@ -347,7 +341,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 6,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast'],
         allergens: [],
         tags: ['balanced']
@@ -363,7 +357,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 10,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['lowCarb', 'keto']
@@ -379,7 +373,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 15,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['balanced']
@@ -395,7 +389,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 10,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
         allergens: [],
         tags: ['lowCarb', 'keto']
@@ -411,7 +405,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 12,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner'],
         allergens: [],
         tags: ['lowCarb', 'keto']
@@ -427,7 +421,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 16,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Lunch', 'Dinner'],
         allergens: [],
         tags: ['lowCarb']
@@ -443,7 +437,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 6,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack', 'Lunch', 'Dinner'],
         allergens: ['nuts'],
         tags: ['lowCarb', 'keto']
@@ -459,7 +453,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 14,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: ['nuts'],
         tags: ['highProtein', 'lowCarb', 'keto']
@@ -475,7 +469,7 @@ export const FOOD_ITEMS = {
         max: 4,
         estimatedCost: 7,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Snack'],
         allergens: [],
         tags: ['highProtein']
@@ -491,7 +485,7 @@ export const FOOD_ITEMS = {
         max: 6,
         estimatedCost: 4,
         priceTier: 'mid',
-        dietProfiles: ['vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Lunch', 'Dinner', 'Breakfast'],
         allergens: ['dairy'],
         tags: ['lowCarb', 'keto']
@@ -507,7 +501,7 @@ export const FOOD_ITEMS = {
         max: 3,
         estimatedCost: 8,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: [],
         tags: ['balanced']
@@ -523,7 +517,7 @@ export const FOOD_ITEMS = {
         max: 2,
         estimatedCost: 15,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Snack', 'Breakfast'],
         allergens: [],
         tags: ['balanced']
@@ -539,7 +533,7 @@ export const FOOD_ITEMS = {
         max: 2,
         estimatedCost: 12,
         priceTier: 'mid',
-        dietProfiles: ['vegan', 'vegetarian', 'eggetarian', 'nonVeg'],
+        dietProfiles: ['vegetarian', 'nonVeg'],
         mealTypes: ['Breakfast', 'Snack'],
         allergens: [],
         tags: ['balanced']

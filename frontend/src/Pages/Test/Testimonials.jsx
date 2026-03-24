@@ -115,32 +115,7 @@ const Testimonials = () => {
             ))}
           </div>
 
-          {/* Call to Action */}
-          <div className="mt-12 sm:mt-16 text-center">
-            <div className="bg-emerald-600 rounded-2xl p-8 sm:p-12 text-white">
-              <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-                Ready to Transform Your Fitness?
-              </h3>
-              <p className="text-lg sm:text-xl mb-6 sm:mb-8 opacity-90">
-                Join over 50,000 users who trust FitVision AI for their fitness
-                journey.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={handleNavigate}
-                  className="bg-white text-emerald-600 hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  Start Free Trial
-                </button>
-                <button
-                  onClick={handleGetStarted}
-                  className="border-2 border-white text-white hover:bg-white hover:text-emerald-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold transition-colors whitespace-nowrap cursor-pointer"
-                >
-                  Get Your Personalized Plan
-                </button>
-              </div>
-            </div>
-          </div>
+
         </div>
       </section>
     </div>
