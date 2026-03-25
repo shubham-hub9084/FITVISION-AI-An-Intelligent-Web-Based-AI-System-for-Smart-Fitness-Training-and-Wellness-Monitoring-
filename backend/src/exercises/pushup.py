@@ -54,10 +54,8 @@ class Pushup(BaseExercise):
             # We want elbows roughly 45 deg, so Elbow Y should be significantly lower (greater value) than Shoulder Y.
             
             # A. Core Stability (Safety)
-            if body_alignment < 160:
-                feedback.append("⚠️ Hips Sagging: Engage core / glutes")
-            elif body_alignment > 200: # 180 +/- tolerance
-                feedback.append("⚠️ Hips High: Form a straight line")
+            if body_alignment < 165:
+                feedback.append("⚠️ Keep Body Straight: Don't sag or pike hips")
                 
             # B. Range of Motion (Movement Quality)
             if elbow_angle > 170:
@@ -66,7 +64,7 @@ class Pushup(BaseExercise):
             
             # In 'down' phase checks (dynamic check using stage would be better, but strict form check works too)
             # If angle is somewhat low but not deep enough
-            if 90 < elbow_angle < 130:
+            if 90 < elbow_angle < 120:
                  feedback.append("ℹ️ Go Deeper: Chest to floor")
 
             # C. Elbow Flare Check

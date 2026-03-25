@@ -11,9 +11,9 @@ class ExerciseMonitor:
         
         # Define thresholds for different exercises
         self.thresholds = {
-            "squat": {"down": 100, "up": 150},
-            "pushup": {"down": 90, "up": 160},
-            "curl": {"down": 40, "up": 160},
+            "squat": {"down": 90, "up": 160},
+            "pushup": {"down": 90, "up": 150},
+            "curl": {"down": 45, "up": 150},
             "shoulder_press": {"down": 90, "up": 160}
         }
         

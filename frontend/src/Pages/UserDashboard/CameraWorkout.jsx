@@ -284,7 +284,7 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
                         <img
                             src={`${config.API_BASE_URL}/video_feed`}
                             alt="AI Stream"
-                            className="w-full h-auto max-h-[60vh] object-contain transform scale-x-[-1]"
+                            className="w-full h-auto max-h-[60vh] object-contain"
                         />
                     </div>
 

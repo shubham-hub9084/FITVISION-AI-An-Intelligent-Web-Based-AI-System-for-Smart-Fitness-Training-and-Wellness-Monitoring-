@@ -12,7 +12,7 @@ const FloatingAiAssistant = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hi! I'm your FitVision AI assistant. How can I help you with your fitness journey today?", sender: 'bot' }
+    { id: 1, text: "👋 Hi there! I'm your **FitVision AI Expert**. I'm here to help you master your workouts, optimize your nutrition, and crush your fitness goals. How can I assist your journey today?", sender: 'bot' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const chatRef = useRef(null);

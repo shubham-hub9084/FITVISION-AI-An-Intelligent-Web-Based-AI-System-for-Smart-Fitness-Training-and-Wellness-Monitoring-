@@ -66,14 +66,14 @@ class Squat(BaseExercise):
             # A. Depth Check (Movement Quality)
             if knee_angle < 70:
                 feedback.append("⚠️ Too Deep: Limit range to protect knees")
-            elif knee_angle > 110 and knee_angle < 150: # In "holding" zone or descent
+            elif 95 < knee_angle < 140: 
                 # Not parallel yet
                 feedback.append("ℹ️ Go Lower: Thighs should be parallel to floor")
                 
             # B. Neutral Spine (Posture)
             # Using Shoulder-Hip-Knee angle to approximate. 
-            # If < 60, excessive forward lean.
-            if hip_angle < 60:
+            # If < 75, excessive forward lean.
+            if hip_angle < 75:
                 feedback.append("⚠️ Chest Up: Maintain neutral spine (don't fold)")
             
             # C. Knee Valgus / Stability (Safety)

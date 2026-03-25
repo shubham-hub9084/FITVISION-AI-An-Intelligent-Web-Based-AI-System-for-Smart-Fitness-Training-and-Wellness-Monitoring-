@@ -22,7 +22,16 @@ export const getGeminiResponse = async (message) => {
   }
 
   try {
-    const result = await model.generateContent(message);
+    const systemPrompt = `You are the official FitVision AI Assistant. FitVision is an advanced AI-powered fitness platform. 
+Key Features:
+1. **AI Trainer**: Real-time form correction and rep counting using the user's camera.
+2. **Personalized Nutrition**: Custom AI-generated meal plans (Veg/Non-Veg) based on activity level.
+3. **Progress Dashboard**: Professional tracking of workouts, streaks, and achievements.
+4. **BMI Calculator**: Intuitive body mass index calculation with health categories.
+If asked "What is FitVision?" or "What do you do?", provide a comprehensive and motivating summary of these features. Keep responses concise, professional, and fitness-focused.`;
+
+    const fullPrompt = `${systemPrompt}\n\nUser Question: ${message}`;
+    const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     return { text: response.text() };
   } catch (error) {

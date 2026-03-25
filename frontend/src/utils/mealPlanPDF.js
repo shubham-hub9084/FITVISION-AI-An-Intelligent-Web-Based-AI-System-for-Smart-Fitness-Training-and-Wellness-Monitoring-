@@ -37,7 +37,7 @@ export const downloadMealPlanAsPDF = (formData, generatedPlan) => {
     doc.text('FitVision AI', MARGIN, 15);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text('AI Powered Weekly Meal Plan', MARGIN, 23);
+    doc.text('AI Powered Meal Plan', MARGIN, 23);
 
     // Date
     doc.setFontSize(10);
@@ -83,11 +83,11 @@ export const downloadMealPlanAsPDF = (formData, generatedPlan) => {
 
     y += 36;
 
-    // ------ WEEKLY OVERVIEW TABLE ------
+    // ------ OVERVIEW TABLE ------
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(17, 24, 39);
-    doc.text('Weekly Overview', MARGIN, y + 6);
+    doc.text('Meal Plan Overview', MARGIN, y + 6);
     y += 10;
 
     autoTable(doc, {

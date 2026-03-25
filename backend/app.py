@@ -9,6 +9,7 @@ import cv2
 import sys
 import os
 import time
+import threading
 
 # Add backend directory to path so both `src` and `database` packages are found
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -38,8 +39,10 @@ def get_camera():
     global camera
     if camera is None or not camera.isOpened():
         camera = cv2.VideoCapture(0)
-        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        # Lower resolution to drastically reduce processing & encoding overhead
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        camera.set(cv2.CAP_PROP_FPS, 30)
     return camera
 
 
@@ -73,12 +76,12 @@ def generate_frames():
             counter, stage = primary_sess['monitor'].monitor_exercise(landmarks)
             
             # Rep tracking & sync to DB
-            if counter > last_rep_count:
-                last_rep_count = counter
+            if counter > primary_sess['repetitions']:
                 for uid in active_uids:
                     user_sessions[uid]['repetitions'] = counter
                     user_sessions[uid]['engine'].log_rep()
-                    progress_tracker.update_active_session_reps(uid, counter)
+                    # Run DB update in a background thread to prevent stutter during reps
+                    threading.Thread(target=progress_tracker.update_active_session_reps, args=(uid, counter), daemon=True).start()
 
             # Form & Safety Analysis
             feedback = primary_sess['corrector'].analyze_form(landmarks)
@@ -97,8 +100,9 @@ def generate_frames():
                        (frame.shape[1]//2 - 250, frame.shape[0]//2),
                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
-        # Encode and stream frame
-        ret, buffer = cv2.imencode('.jpg', frame)
+        # Encode and stream frame (optimized quality for lower CPU usage)
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 75]
+        ret, buffer = cv2.imencode('.jpg', frame, encode_param)
         frame = buffer.tobytes()
         
         yield (b'--frame\r\n'

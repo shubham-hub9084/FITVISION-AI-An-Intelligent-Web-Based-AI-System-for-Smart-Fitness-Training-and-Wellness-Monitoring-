@@ -22,7 +22,52 @@ const ProgressChart = ({ user_id }) => {
         try {
             const response = await fetch(`${config.API_BASE_URL}/api/chart_data?user_id=${user_id}&days=${days}`);
             const result = await response.json();
-            setData(result);
+            
+            // Generate the last 7 days as a continuous timeline
+            const today = new Date();
+            const dateMap = {};
+            
+            for (let i = days - 1; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                // Use ISO string (YYYY-MM-DD) for robust matching
+                const isoDate = d.toISOString().split('T')[0];
+                dateMap[isoDate] = { date: isoDate };
+                // Initialize all exercises to 0
+                chartConfig.forEach(config => {
+                    dateMap[isoDate][config.key] = 0;
+                });
+            }
+
+            // Fill in the actual data from the backend
+            result.forEach(item => {
+                // Backend now returns ISO dates
+                if (dateMap[item.date]) {
+                    Object.keys(item).forEach(key => {
+                        if (key !== 'date' && key !== 'Errors') {
+                            dateMap[item.date][key] = item[key];
+                        }
+                    });
+                }
+            });
+
+            // Convert map back to array and sort to ensure chronological order
+            const filledData = Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+            
+            // TRIM LOGIC: Avoid showing empty days *before* the user's first workout
+            let firstActiveIndex = filledData.findIndex(day => 
+                chartConfig.some(config => day[config.key] > 0)
+            );
+            
+            // If they have worked out, trim the array starting from one day BEFORE their 
+            // first active workout (so the chart has a zero-point to visibly slope upwards from)
+            let trimmedData = filledData;
+            if (firstActiveIndex !== -1) {
+                const startIndex = Math.max(0, firstActiveIndex - 1);
+                trimmedData = filledData.slice(startIndex);
+            }
+            
+            setData(trimmedData);
             setLoading(false);
         } catch (error) {
             console.error("Failed to fetch chart data:", error);
@@ -36,35 +81,35 @@ const ProgressChart = ({ user_id }) => {
         return () => clearInterval(interval);
     }, [user_id]);
 
-    // Exercise Config matching screenshot + 4 core exercises
+    // Premium SaaS Color Config (Linear/Stripe inspired)
     const chartConfig = [
-        { key: 'Squats', color: '#3b82f6', gradientId: 'colorSquats' },
-        { key: 'Push-ups', color: '#10b981', gradientId: 'colorPushups' },
-        { key: 'Bicep Curls', color: '#f59e0b', gradientId: 'colorCurls' },
-        { key: 'Shoulder Press', color: '#8b5cf6', gradientId: 'colorPress' }
+        { key: 'Squats', color: '#6366f1', gradientId: 'colorSquats' },     // Indigo
+        { key: 'Push-ups', color: '#10b981', gradientId: 'colorPushups' }, // Emerald
+        { key: 'Bicep Curls', color: '#f59e0b', gradientId: 'colorCurls' }, // Amber
+        { key: 'Shoulder Press', color: '#ec4899', gradientId: 'colorPress' } // Pink/Rose
     ];
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl shadow-2xl backdrop-blur-md bg-opacity-90">
-                    <p className="text-gray-400 text-xs font-bold mb-3 uppercase tracking-widest border-b border-slate-700 pb-2">
-                        {label}
+                <div className="bg-white dark:bg-[#111827] border border-gray-100 dark:border-gray-800 p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] backdrop-blur-xl">
+                    <p className="text-gray-500 dark:text-gray-400 text-xs font-semibold mb-3 tracking-wider uppercase">
+                        {new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
-                    <div className="space-y-2.5">
+                    <div className="space-y-2">
                         {payload.map((entry, index) => (
-                            <div key={index} className="flex items-center justify-between gap-6">
-                                <div className="flex items-center gap-2">
+                            <div key={index} className="flex items-center justify-between gap-8">
+                                <div className="flex items-center gap-2.5">
                                     <div 
-                                        className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.3)]" 
+                                        className="w-2.5 h-2.5 rounded-full ring-2 ring-white/10 dark:ring-black/20" 
                                         style={{ backgroundColor: entry.color }}
                                     />
-                                    <span className="text-gray-300 text-sm font-medium">
+                                    <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                                         {entry.name}
                                     </span>
                                 </div>
-                                <span className="text-white text-sm font-bold tabular-nums">
-                                    {entry.value} reps
+                                <span className="text-gray-900 dark:text-white text-sm font-bold font-mono">
+                                    {entry.value}
                                 </span>
                             </div>
                         ))}
@@ -76,88 +121,74 @@ const ProgressChart = ({ user_id }) => {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-gray-100 dark:border-slate-700/50">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-slate-700/50">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Performance Analytics</h2>
-                    <div className="flex items-center gap-2 mt-1.5">
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Live monitoring: Weekly exercise & form accuracy</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Performance Flow</h2>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total volume grouped by exercise</p>
                     </div>
-                </div>
-                
-                <div className="mt-4 sm:mt-0 px-4 py-2 bg-slate-50 dark:bg-slate-700/30 rounded-full border border-slate-100 dark:border-slate-700/50">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">7 Days Overview</span>
                 </div>
             </div>
 
-            <div className="h-[450px] w-full mt-4">
+            <div className="h-[400px] w-full mt-2 font-sans">
                 {loading ? (
                     <div className="h-full w-full flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
-                            <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-emerald-500/20 border-b-emerald-500"></div>
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loading Analytics...</span>
+                            <div className="animate-spin rounded-full h-8 w-8 border-[2px] border-emerald-500/20 border-b-emerald-500"></div>
                         </div>
                     </div>
                 ) : data.length === 0 ? (
-                    <div className="h-full w-full flex flex-col items-center justify-center text-gray-500">
-                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700/30 rounded-2xl flex items-center justify-center mb-4">
-                            <i className="ri-bar-chart-line text-3xl opacity-20"></i>
-                        </div>
-                        <p className="font-bold text-sm tracking-wide">NO RECENT WORKOUT DATA</p>
-                        <p className="text-xs mt-1 text-gray-400">Complete a session to see your progress graph</p>
+                    <div className="h-full w-full flex flex-col items-center justify-center text-gray-400">
+                        <i className="ri-bar-chart-2-line text-4xl mb-3 opacity-30"></i>
+                        <p className="font-semibold text-sm">No workout data available</p>
                     </div>
                 ) : (
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>
+                        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                                 {chartConfig.map(config => (
                                     <linearGradient key={config.gradientId} id={config.gradientId} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={config.color} stopOpacity={0.3}/>
+                                        <stop offset="5%" stopColor={config.color} stopOpacity={0.25}/>
                                         <stop offset="95%" stopColor={config.color} stopOpacity={0}/>
                                     </linearGradient>
                                 ))}
                             </defs>
                             <CartesianGrid 
-                                strokeDasharray="3 3" 
+                                strokeDasharray="4 4" 
                                 stroke="currentColor" 
-                                className="text-gray-200 dark:text-slate-700/50" 
+                                className="text-gray-100 dark:text-slate-700/40" 
                                 vertical={false} 
                             />
-                            <XAxis 
+                             <XAxis 
                                 dataKey="date" 
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
-                                dy={15}
-                            >
-                                <Label 
-                                    value="COMPLETION DATE" 
-                                    offset={-10} 
-                                    position="insideBottom" 
-                                    style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', letterSpacing: '0.1em' }} 
-                                />
-                            </XAxis>
+                                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
+                                dy={10}
+                                minTickGap={20}
+                                tickFormatter={(dateStr) => {
+                                    const d = new Date(dateStr);
+                                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                }}
+                            />
                             <YAxis 
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }}
                                 dx={-10}
-                            >
-                                <Label 
-                                    value="ACTIVITY COUNT (REPS)" 
-                                    angle={-90} 
-                                    position="insideLeft" 
-                                    style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', letterSpacing: '0.1em', textAnchor: 'middle' }} 
-                                />
-                            </YAxis>
-                            <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#94a3b8', strokeWidth: 1 }} />
+                            />
+                            <Tooltip 
+                                content={<CustomTooltip />} 
+                                cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.4 }} 
+                            />
                             <Legend 
                                 verticalAlign="top" 
                                 align="right"
-                                height={50}
+                                height={40}
                                 iconType="circle"
-                                wrapperStyle={{ paddingBottom: '40px', fontSize: '12px', fontWeight: 'bold' }}
+                                wrapperStyle={{ fontSize: '12px', fontWeight: '500', color: '#64748b' }}
                             />
                             
                             {chartConfig.map((config) => (
@@ -167,10 +198,10 @@ const ProgressChart = ({ user_id }) => {
                                     name={config.key}
                                     dataKey={config.key}
                                     stroke={config.color}
-                                    strokeWidth={3}
+                                    strokeWidth={2.5}
                                     fillOpacity={1}
                                     fill={`url(#${config.gradientId})`}
-                                    activeDot={{ r: 6, strokeWidth: 0, fill: config.color }}
+                                    activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff', fill: config.color }}
                                     animationDuration={1500}
                                 />
                             ))}

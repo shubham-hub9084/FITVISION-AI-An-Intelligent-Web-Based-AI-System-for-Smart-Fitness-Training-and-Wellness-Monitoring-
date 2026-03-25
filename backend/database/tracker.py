@@ -137,19 +137,6 @@ class ProgressTracker:
         cur.close()
         conn.close()
 
-    # ------------------------------------------------------------------ #
-    #  Feedback                                                            #
-    # ------------------------------------------------------------------ #
-    def save_feedback(self, user_id, workout_id, feedback_type, message):
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO feedback_history (user_id, workout_id, feedback_type, message)
-            VALUES (%s, %s, %s, %s)
-        """, (user_id, workout_id, feedback_type, message))
-        conn.commit()
-        cur.close()
-        conn.close()
 
     # ------------------------------------------------------------------ #
     #  Read: workout history                                               #
@@ -267,6 +254,50 @@ class ProgressTracker:
         r = cur.fetchone()
         cur.close(); conn.close()
         return dict(r) if r else None
+
+    # ------------------------------------------------------------------ #
+    #  Read: streaks (gamification)                                        #
+    # ------------------------------------------------------------------ #
+    def get_streaks(self, user_id=None):
+        conn = self._conn()
+        cur = conn.cursor()
+        
+        clause = " WHERE user_id = %s" if user_id else ""
+        p = (user_id,) if user_id else ()
+        
+        cur.execute(f"SELECT DISTINCT DATE(completed_at) FROM workouts{clause} ORDER BY DATE(completed_at) DESC", p)
+        dates = [r[0] for r in cur.fetchall()]
+        cur.close(); conn.close()
+        
+        if not dates:
+            return {"current": 0, "longest": 0}
+            
+        from datetime import date
+        
+        # Calculate longest streak
+        temp_streak = 1
+        max_streak = 1
+        for i in range(1, len(dates)):
+            if (dates[i-1] - dates[i]).days == 1:
+                temp_streak += 1
+            else:
+                max_streak = max(max_streak, temp_streak)
+                temp_streak = 1
+        max_streak = max(max_streak, temp_streak)
+        
+        # Calculate current streak
+        current_streak = 0
+        today = date.today()
+        # A streak is active if the latest workout was today or yesterday
+        if (today - dates[0]).days <= 1:
+            current_streak = 1
+            for i in range(1, len(dates)):
+                if (dates[i-1] - dates[i]).days == 1:
+                    current_streak += 1
+                else:
+                    break
+                    
+        return {"current": current_streak, "longest": max_streak}
 
     # ------------------------------------------------------------------ #
     #  Read: achievements                                                  #
@@ -440,7 +471,7 @@ class ProgressTracker:
         
         cur.close(); conn.close()
         
-        # 3. Pivot logic: convert to [{date: '...', 'Squats': 10, 'Errors': 5}, ...]
+        # 3. Pivot logic: convert to [{date: '2026-03-25', 'Squats': 10, 'Errors': 5}, ...]
         name_map = {
             "squat": "Squats",
             "pushup": "Push-ups",
@@ -451,7 +482,8 @@ class ProgressTracker:
         
         # Fill with workout data
         for r in workout_rows:
-            date_str = r['date'].strftime('%b %d')
+            # Use ISO format for robust matching in frontend
+            date_str = r['date'].isoformat()
             if date_str not in pivoted:
                 pivoted[date_str] = {"date": date_str}
             
@@ -461,9 +493,10 @@ class ProgressTracker:
 
         # Fill with error data
         for r in error_rows:
-            date_str = r['date'].strftime('%b %d')
+            date_str = r['date'].isoformat()
             if date_str not in pivoted:
                 pivoted[date_str] = {"date": date_str}
             pivoted[date_str]["Errors"] = int(r['total_errors'])
             
-        return list(pivoted.values())
+        # Return sorted by date
+        return sorted(list(pivoted.values()), key=lambda x: x['date'])

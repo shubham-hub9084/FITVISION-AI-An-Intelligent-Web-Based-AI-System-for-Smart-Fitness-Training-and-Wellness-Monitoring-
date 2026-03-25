@@ -4,7 +4,6 @@ import HeroSection from './HeroSection/HeroSection'
 import Getstarted from './Getstarted/Getstarted'
 import HowItWorks from './HowItWorks/HowItWorks'
 
-import Testimonials from './Test/Testimonials'
 import Contactus from './Contactus/Contactus'
 import Footer from './Footer/Footer'
 import Features from './Features/Features'
@@ -24,7 +23,6 @@ const HomePage = () => {
         <Features />
         <HowItWorks />
 
-        <Testimonials />
         <Contactus />
       </main>
       <Footer />

@@ -4,20 +4,15 @@ import CameraWorkout from './CameraWorkout';
 import Overview from './Overview/Overview';
 import Progress from './Progress/Progress';
 import Achievements from './Achievements/Achievements';
-import Nutrition from './Nutrition/Nutrition';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from "../../context/AuthContext";
 
 const UserDashboard = () => {
     const [showCameraWorkout, setShowCameraWorkout] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
-
-    console.log("Dashboard rendering. User:", user);
+    const { user } = useAuth();
 
     // Real data fetching
     const [achievements, setAchievements] = useState([]);
@@ -45,7 +40,8 @@ const UserDashboard = () => {
                     totalErrors: data.total_errors || 0,
                     todayErrors: data.today_errors || 0,
                     improvements: data.improvements || [],
-                    errorsByWorkout: data.errors_by_workout || {}
+                    errorsByWorkout: data.errors_by_workout || {},
+                    streaks: data.streaks || { current: 0, longest: 0 }
                 });
             }
             if (data.achievements) {
@@ -157,7 +153,10 @@ const UserDashboard = () => {
                 )}
 
                 {activeTab === "achievements" && (
-                    <Achievements achievements={achievements} />
+                    <Achievements 
+                        achievements={achievements} 
+                        streaks={currentData.streaks} 
+                    />
                 )}
             </motion.div>
         </div>

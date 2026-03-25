@@ -60,7 +60,19 @@ export const generateWeeklyPlan = (formData) => {
     const mealConfigs = getMealConfigs(formData.numberOfMeals);
     const today = new Date();
 
-    return Array.from({ length: 7 }, (_, dayIndex) => {
+    // Determine number of days to generate based on activity level
+    let daysToGenerate = 7;
+    const activityLevel = formData.activityLevel;
+    
+    if (activityLevel === 'light') {
+        daysToGenerate = 3; // 1-3 days/week exercise
+    } else if (activityLevel === 'moderate') {
+        daysToGenerate = 5; // 3-5 days/week exercise
+    } else if (activityLevel === 'active') {
+        daysToGenerate = 7; // 6-7 days/week exercise
+    }
+
+    return Array.from({ length: daysToGenerate }, (_, dayIndex) => {
         const date = new Date(today);
         date.setDate(today.getDate() + dayIndex);
 

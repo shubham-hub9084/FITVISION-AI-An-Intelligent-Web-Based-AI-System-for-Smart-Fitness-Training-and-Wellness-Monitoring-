@@ -122,9 +122,7 @@ const MealPlans = () => {
 
   const handleGenerate = () => {
     try {
-      console.log('Generating plan with data:', formData);
       const plan = generateWeeklyPlan(formData);
-      console.log('Generated plan:', plan);
       if (!plan || plan.length === 0) {
         throw new Error('Failed to generate plan - empty result');
       }
@@ -409,7 +407,7 @@ const MealPlans = () => {
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sm:p-8 transition-colors duration-300">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your AI Generated Weekly Plan</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your AI Generated Meal Plan</h2>
                   {weeklySummary && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                       Avg day: {Math.round(weeklySummary.calories / generatedPlan.length)} kcal | Approx. Rs. {Math.round(weeklySummary.estimatedCost / generatedPlan.length)} | Mid-price ingredients

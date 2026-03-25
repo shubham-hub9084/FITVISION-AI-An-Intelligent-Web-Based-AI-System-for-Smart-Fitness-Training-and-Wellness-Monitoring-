@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/Logo';
 import BackButton from '../../components/BackButton';
-import CalculatorFAQ from './CalculatorFAQ';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useAuth } from '../../context/AuthContext';
@@ -564,10 +563,6 @@ const CaloriesCalculator = () => {
           </aside>
         </div>
 
-        {/* FAQ Section - Full Width */}
-        <div className="mt-14 sm:mt-24">
-          <CalculatorFAQ />
-        </div>
       </div>
     </div>
   );

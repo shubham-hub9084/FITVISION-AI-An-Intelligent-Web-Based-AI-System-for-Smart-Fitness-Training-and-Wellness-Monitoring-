@@ -57,7 +57,7 @@ class Curl(BaseExercise):
             # If hip angle < 170 during curl, they might be swinging back.
             hip_angle = self.pose_detector.calculate_angle(landmarks, 12, 24, 26)
             
-            if hip_angle < 165:
+            if hip_angle < 160:
                 feedback.append("⚠️ Strict Form: Don't swing back")
 
             # 3. Elbow Drift (Isolation)
@@ -69,7 +69,7 @@ class Curl(BaseExercise):
             # If Elbow is far forward (shoulder flexion), checking shoulder angle (Hip-Shoulder-Elbow).
             shoulder_flexion = self.pose_detector.calculate_angle(landmarks, 24, 12, 14)
             if shoulder_flexion > 20: # Arm moving forward
-                 feedback.append("⚠️ Pin Elbows: Keep elbows by your side")
+                 feedback.append("⚠️ Pin Elbows: Keep elbows tucked at your sides")
 
             # 4. Range of Motion
             if elbow_angle > 160:

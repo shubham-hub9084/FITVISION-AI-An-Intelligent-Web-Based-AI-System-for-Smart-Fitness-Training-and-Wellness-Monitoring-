@@ -50,8 +50,8 @@ class ShoulderPress(BaseExercise):
              # Assuming standard side view:
              # Straight = 180. Leaning back (shoulders behind hips) -> angle calculation logic depends.
              # Let's assume standard "straight" check.
-             if hip_angle < 160: 
-                 feedback.append("⚠️ Core Tight: Don't arch your back")
+             if hip_angle < 155: 
+                 feedback.append("⚠️ Core Tight: Don't lean back, keep spine neutral")
 
              # 2. Arm Symmetry (Front View)
              # Compare Right (12-14-16) vs Left (11-13-15) elbow angles.
