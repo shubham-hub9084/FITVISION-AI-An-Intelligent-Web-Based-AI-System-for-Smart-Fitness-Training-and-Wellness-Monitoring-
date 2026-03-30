@@ -105,11 +105,7 @@ const Footer = () => {
           <p className="text-slate-500 text-sm text-center md:text-left">
             © {new Date().getFullYear()} FitVision AI. All rights reserved.
           </p>
-          <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-widest">
-            <span>Made with</span>
-            <i className="ri-heart-3-fill text-red-500 animate-pulse"></i>
-            <span>for Fitness Enthusiasts</span>
-          </div>
+
         </div>
       </div>
     </footer>

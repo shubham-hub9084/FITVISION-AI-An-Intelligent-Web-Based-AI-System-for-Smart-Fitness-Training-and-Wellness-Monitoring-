@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar'
 import HeroSection from './HeroSection/HeroSection'
 import Getstarted from './Getstarted/Getstarted'
 import HowItWorks from './HowItWorks/HowItWorks'
+import Testimonial from './Testimonial/Testimonial'
 
 import Contactus from './Contactus/Contactus'
 import Footer from './Footer/Footer'
@@ -22,7 +23,7 @@ const HomePage = () => {
         <Getstarted showGetStartedModal={showGetStartedModal} setShowGetStartedModal={setShowGetStartedModal} />
         <Features />
         <HowItWorks />
-
+        <Testimonial />
         <Contactus />
       </main>
       <Footer />
