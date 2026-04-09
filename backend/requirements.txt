@@ -1,6 +1,9 @@
 # AI Fitness Trainer - Dependencies
 # Recommended Python Version: 3.10.0
 
+# Web Server (Production)
+gunicorn==21.2.0
+
 # Web Framework
 Flask==3.1.3
 Flask-CORS==6.0.2
