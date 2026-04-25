@@ -92,7 +92,7 @@ class PoseDetector:
                 h, w, c = img.shape
                 # Convert normalized coordinates to pixel coordinates
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                landmarks.append([id, cx, cy, lm.z])
+                landmarks.append([id, cx, cy, lm.z, lm.visibility])
                 
                 # Draw circles on landmarks if requested
                 if draw:

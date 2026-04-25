@@ -19,7 +19,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative bg-slate-900 border-t border-slate-800 text-slate-300 py-16 overflow-hidden font-sans">
+    <footer className="relative bg-slate-900 border-t border-slate-800 text-white py-16 overflow-hidden font-sans">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-8 mb-16">
           {/* 1. Brand Section */}
@@ -27,7 +27,7 @@ const Footer = () => {
             <Link to="home" smooth={true} duration={500} className="inline-block cursor-pointer">
               <Logo className="text-white" />
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
+            <p className="text-gray-200 text-sm leading-relaxed max-w-xs">
               Empowering your fitness journey with next-gen AI technology. Real-time form correction and data-driven insights.
             </p>
 
@@ -36,7 +36,7 @@ const Footer = () => {
                 <a
                   key={index}
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-emerald-500 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
+                  className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-gray-200 hover:bg-emerald-500 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
                   aria-label={social}
                 >
                   <i className={`ri-${social}-line text-lg`}></i>
@@ -75,13 +75,13 @@ const Footer = () => {
           {/* 3. Newsletter */}
           <div data-aos="fade-up" data-aos-delay="200">
             <h4 className="text-white font-semibold text-lg mb-6">Stay Updated</h4>
-            <p className="text-slate-400 text-sm mb-4">Join our community for the latest AI fitness tips and model updates.</p>
+            <p className="text-gray-200 text-sm mb-4">Join our community for the latest AI fitness tips and model updates.</p>
             <form className="relative" onSubmit={handleSubscribe}>
               <input
                 type="email"
                 required
                 placeholder="Enter your email"
-                className="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-slate-500"
+                className="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-slate-400"
               />
               <button
                 type="submit"
@@ -102,7 +102,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-slate-500 text-sm text-center md:text-left">
+          <p className="text-gray-300 text-sm text-center md:text-left">
             © {new Date().getFullYear()} FitVision AI. All rights reserved.
           </p>
 

@@ -21,9 +21,8 @@ class Pushup(BaseExercise):
             print(f"❌ Failed to load ML Model: {e}")
             return None
     def count_reps(self, landmarks, stage, counter):
-        # Calculate elbow angle (shoulder-elbow-wrist)
-        # Landmark IDs: Shoulder=12, Elbow=14, Wrist=16 (right side)
-        angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
+        # Calculate elbow angle dynamically (Right: 12, 14, 16 | Left: 11, 13, 15)
+        angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
         
         # Check if going down
         if angle < self.thresholds["pushup"]["down"]:
@@ -36,15 +35,37 @@ class Pushup(BaseExercise):
             
         return counter, stage
 
-    def check_form(self, landmarks):
+    def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
+        
+        # Setup Pose Check
+        if counter == 0 and stage is None:
+            try:
+                body_alignment = self.get_best_side_angle(landmarks, [12, 24, 28], [11, 23, 27])
+                shoulder_y = landmarks[12][2]
+                ankle_y = landmarks[28][2]
+                
+                dy = abs(ankle_y - shoulder_y)
+                dx = abs(landmarks[28][1] - landmarks[12][1])
+                
+                if dy > dx * 1.5:
+                    return ["ℹ️ Setup: Transition to the floor. Place hands wider than shoulders."]
+                elif dy > dx:
+                    return ["ℹ️ Setup: Get into a horizontal plank position."]
+                elif body_alignment < 140:
+                    return ["ℹ️ Setup: Align your shoulders, hips, and ankles into a straight line."]
+                elif body_alignment >= 150:
+                    return ["✅ Ready: Keep your core tight and lower your chest."]
+                else:
+                    return ["ℹ️ Setup: Keep your body straight like a plank."]
+            except Exception:
+                pass
+
         try:
             # 1. Posture & Alignment
-            # Elbow Angle: 12, 14, 16
-            elbow_angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
-            # Body Alignment (Shoulder - Hip - Ankle): 11, 23, 27 (Left) or 12, 24, 28 (Right)
-            # Using left side for consistency or average? Let's use Right (12, 24, 28)
-            body_alignment = self.pose_detector.calculate_angle(landmarks, 12, 24, 28)
+            elbow_angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
+            # Body Alignment (Shoulder - Hip - Ankle)
+            body_alignment = self.get_best_side_angle(landmarks, [12, 24, 28], [11, 23, 27])
             
             # Elbow Flare Check (Shoulder-Elbow vs Vertical or Torso?)
             # Hard in 2D without top view.
@@ -79,11 +100,11 @@ class Pushup(BaseExercise):
             # Let's stick to Body Alignment as primary Safety check.
             
             # D. Cervical Spine (Head Position)
-            # Ear (8) - Shoulder (12) alignment? 
-            # If Ear Y is much lower than Shoulder Y, head is drooping.
-            ear_y = landmarks[8][2]
-            shoulder_y = landmarks[12][2]
-            if ear_y > shoulder_y: # Head dropping below shoulders
+            # Use Nose (0) and highest shoulder to robustly check if head is dropping
+            nose_y = landmarks[0][2]
+            shoulder_y = min(landmarks[11][2], landmarks[12][2])
+            
+            if nose_y > shoulder_y: # Head dropping below shoulders
                 feedback.append("⚠️ Head Neutral: Don't drop your head")
 
             # --- AI Model Integration (Advanced Form) ---

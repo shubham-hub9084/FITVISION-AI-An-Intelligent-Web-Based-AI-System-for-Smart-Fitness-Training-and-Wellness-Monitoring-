@@ -21,9 +21,8 @@ class ShoulderPress(BaseExercise):
             print(f"❌ Failed to load ML Model: {e}")
             return None
     def count_reps(self, landmarks, stage, counter):
-        # Calculate elbow angle (shoulder-elbow-wrist)
-        # Landmark IDs: Shoulder=12, Elbow=14, Wrist=16
-        angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
+        # Calculate elbow angle dynamically
+        angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
         
         # Check if going down (arms bent)
         if angle < self.thresholds["shoulder_press"]["down"]:
@@ -36,15 +35,31 @@ class ShoulderPress(BaseExercise):
             
         return counter, stage
 
-    def check_form(self, landmarks):
+    def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
+        
+        # Setup Pose Check
+        if counter == 0 and stage is None:
+            try:
+                # For shoulder press, arms should be up. Average both sides for robust check.
+                wrist_y = (landmarks[15][2] + landmarks[16][2]) / 2
+                shoulder_y = (landmarks[11][2] + landmarks[12][2]) / 2
+                elbow_angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
+                
+                if wrist_y > shoulder_y: # wrists below shoulders (hands down)
+                    if elbow_angle > 150:
+                        return ["ℹ️ Setup: Bring dumbbells up to shoulder height."]
+                    else:
+                        return ["ℹ️ Setup: Raise dumbbells higher, to shoulder level."]
+                else:
+                    return ["✅ Ready: Brace your core and press the weights overhead."]
+            except Exception:
+                pass
+
         try:
              # 1. Posture Checks
              # Lumbar Arching (hyperextension) check
-             # Use Shoulder-Hip-Knee angle. If > 180 (hyperextended) or < 170 (flexion).
-             # Usually people lean back -> Hyperextension.
-             # Need side view. 
-             hip_angle = self.pose_detector.calculate_angle(landmarks, 12, 24, 26)
+             hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
              
              # If angle is significantly < 170 implies backward lean in many coord systems depending on orientation.
              # Assuming standard side view:

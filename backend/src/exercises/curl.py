@@ -21,12 +21,11 @@ class Curl(BaseExercise):
             print(f"❌ Failed to load ML Model: {e}")
             return None
     def count_reps(self, landmarks, stage, counter):
-        # Calculate elbow angle (shoulder-elbow-wrist)
-        # Landmark IDs: Shoulder=12, Elbow=14, Wrist=16 (right side)
-        angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
+        # Calculate elbow angle dynamically
+        angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
         
         # Check if going up (curl is up-phase dominant)
-        if angle > 160:
+        if angle > self.thresholds["curl"]["up"]:
             stage = "down" # Starting position
             
         # Check if curled up
@@ -36,17 +35,33 @@ class Curl(BaseExercise):
             
         return counter, stage
 
-    def check_form(self, landmarks):
+    def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
+        
+        # Setup Pose Check
+        if counter == 0 and stage is None:
+            try:
+                elbow_angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
+                hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
+                
+                if elbow_angle < 60:
+                    return ["ℹ️ Setup: Lower the dumbbells fully to begin."]
+                elif elbow_angle <= 150:
+                    return ["ℹ️ Setup: Fully extend your arms down by your sides."]
+                elif hip_angle < 150:
+                    return ["ℹ️ Setup: Stand tall with a neutral spine."]
+                else:
+                    return ["✅ Ready: Pin elbows to your sides and curl upwards."]
+            except Exception:
+                pass
+
         try:
             # 1. Angles
-            elbow_angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
+            elbow_angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
             
             # 2. Movement Quality (Momentum/Swinging)
             # Check Shoulder-Hip vertical alignment deviation. 
             # Or simplified: Check if shoulder moves significantly in X plain relative to hip.
-            shoulder_x = landmarks[12][1]
-            hip_x = landmarks[24][1]
             # normalized to image width is hard, but we can check absolute diff if assuming standard framing
             
             # Better check using angles:
@@ -55,7 +70,7 @@ class Curl(BaseExercise):
             # Using Hip-Shoulder-Elbow is proxy? No. 
             # Let's use Shoulder-Hip-Knee angle (Hip extension).
             # If hip angle < 170 during curl, they might be swinging back.
-            hip_angle = self.pose_detector.calculate_angle(landmarks, 12, 24, 26)
+            hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
             
             if hip_angle < 160:
                 feedback.append("⚠️ Strict Form: Don't swing back")
@@ -67,7 +82,7 @@ class Curl(BaseExercise):
             # Let's check Shoulder-Elbow-Hip angle?
             # Ideally Shoulder-Elbow line is vertical-ish. 
             # If Elbow is far forward (shoulder flexion), checking shoulder angle (Hip-Shoulder-Elbow).
-            shoulder_flexion = self.pose_detector.calculate_angle(landmarks, 24, 12, 14)
+            shoulder_flexion = self.get_best_side_angle(landmarks, [24, 12, 14], [23, 11, 13])
             if shoulder_flexion > 20: # Arm moving forward
                  feedback.append("⚠️ Pin Elbows: Keep elbows tucked at your sides")
 

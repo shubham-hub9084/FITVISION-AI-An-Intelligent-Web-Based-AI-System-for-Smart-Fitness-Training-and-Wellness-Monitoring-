@@ -28,13 +28,13 @@ class PoseCorrector:
         else:
             self.exercise_logic = None
 
-    def analyze_form(self, landmarks):
+    def analyze_form(self, landmarks, stage=None, counter=0):
         """
         Analyze form for the selected exercise
         """
         self.feedback = []
         if self.exercise_logic:
-             self.feedback = self.exercise_logic.check_form(landmarks)
+             self.feedback = self.exercise_logic.check_form(landmarks, stage, counter)
         else:
              self.feedback = ["Exercise type not supported or logic missing"]
         
@@ -49,17 +49,17 @@ class PoseCorrector:
     # Actually I should verify app.py calls.
     # Reading app.py is safer.
     
-    def check_squat_form(self, landmarks):
-        return self.analyze_form(landmarks)
+    def check_squat_form(self, landmarks, stage=None, counter=0):
+        return self.analyze_form(landmarks, stage, counter)
         
-    def check_pushup_form(self, landmarks):
-        return self.analyze_form(landmarks)
+    def check_pushup_form(self, landmarks, stage=None, counter=0):
+        return self.analyze_form(landmarks, stage, counter)
         
-    def check_curl_form(self, landmarks):
-        return self.analyze_form(landmarks)
+    def check_curl_form(self, landmarks, stage=None, counter=0):
+        return self.analyze_form(landmarks, stage, counter)
         
-    def check_shoulder_press_form(self, landmarks):
-        return self.analyze_form(landmarks)
+    def check_shoulder_press_form(self, landmarks, stage=None, counter=0):
+        return self.analyze_form(landmarks, stage, counter)
 
     def get_feedback_summary(self):
         """

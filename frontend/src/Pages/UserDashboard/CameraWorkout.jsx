@@ -110,6 +110,37 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
         }
     };
 
+    // Cleanup session on component unmount or browser close
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (sessionActive && user_id) {
+                // fetch with keepalive: true ensures the request completes during unload 
+                // and properly sets application/json to avoid Flask HTTP 415 errors
+                fetch(`${config.API_BASE_URL}/api/stop_session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id }),
+                    keepalive: true
+                }).catch(e => console.error("Cleanup error:", e));
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // Also trigger on React component unmount (e.g., navigating to another page)
+            if (sessionActive && user_id) {
+                fetch(`${config.API_BASE_URL}/api/stop_session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id }),
+                    keepalive: true
+                }).catch(e => console.error("Cleanup error:", e));
+            }
+        };
+    }, [sessionActive, user_id]);
+
     // Poll for stats
     useEffect(() => {
         if (!sessionActive) return;
@@ -246,6 +277,22 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
             </AnimatePresence>
         );
     }
+    
+    // Determine feedback colors based on content
+    const lowerFeedback = feedback.toLowerCase();
+    let feedbackColorClass = '';
+    
+    if (feedback.includes('✅') || lowerFeedback.includes('good') || lowerFeedback.includes('great') || lowerFeedback.includes('perfect') || lowerFeedback.includes('correct')) {
+        feedbackColorClass = 'bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]';
+    } else if (feedback.includes('ℹ️') || lowerFeedback.includes('setup') || lowerFeedback.includes('ready')) {
+        feedbackColorClass = 'bg-blue-500/10 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)]';
+    } else if (feedback.includes('✨') || lowerFeedback.includes('ai coach: excellent')) {
+        feedbackColorClass = 'bg-purple-500/10 border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.15)]';
+    } else if (feedback.includes('⚠️')) {
+        feedbackColorClass = 'bg-amber-500/10 border-amber-500 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]';
+    } else {
+        feedbackColorClass = 'bg-rose-500/10 border-rose-500 text-rose-400 font-bold shadow-[0_0_15px_rgba(244,63,94,0.2)]';
+    }
 
     // 3. Active Workout Screen
     return (
@@ -312,12 +359,7 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
                             {/* Center: Feedback & Alerts */}
                             <div className="col-span-1 md:col-span-1 flex flex-col gap-3">
                                 {/* Form Feedback */}
-                                <div className={`
-                                    p-4 rounded-xl border-l-4 transition-all duration-300 flex-1 flex items-center
-                                    ${feedback.toLowerCase().includes('ready') ? 'bg-blue-500/10 border-blue-500 text-blue-400' :
-                                        feedback.toLowerCase().includes('good') || feedback.toLowerCase().includes('great') || feedback.toLowerCase().includes('perfect') || feedback.toLowerCase().includes('correct') ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' :
-                                            'bg-red-500/10 border-red-500 text-red-500 font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)]'}
-                                `}>
+                                <div className={`p-4 rounded-xl border-l-4 transition-all duration-300 flex-1 flex items-center ${feedbackColorClass}`}>
                                     <p className="text-lg font-bold leading-tight">
                                         {feedback}
                                     </p>

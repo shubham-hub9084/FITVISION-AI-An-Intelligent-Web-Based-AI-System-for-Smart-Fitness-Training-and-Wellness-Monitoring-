@@ -101,13 +101,10 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between ml-1">
+                  <div className="mb-2 ml-1">
                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider" id="workoutTypes-label">
                       Select Exercises To Start With
                     </label>
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
-                      AI ENABLED
-                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
@@ -121,9 +118,6 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
                         className="group relative flex items-center p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl cursor-pointer border-2 border-transparent hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-400/5 transition-all duration-300"
                       >
                         <input type="checkbox" name="workoutTypes" value={type.id} className="peer hidden" aria-label={type.label} />
-                        <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 border border-gray-100 dark:border-slate-600 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform duration-300 mr-4 shadow-sm">
-                          <i className={`${type.icon} text-2xl animate-pulse`}></i>
-                        </div>
                         <div className="flex-1">
                           <div className="font-bold text-gray-900 dark:text-white">{type.label}</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">{type.desc}</div>

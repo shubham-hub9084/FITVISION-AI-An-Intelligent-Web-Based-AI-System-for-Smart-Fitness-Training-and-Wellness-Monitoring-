@@ -61,7 +61,7 @@ const Navbar = () => {
                                     key={link.to}
                                     to={link.to}
                                     smooth={true}
-                                    duration={1000}
+                                    duration={50}
                                     offset={-70}
                                     className="px-3 py-2 text-sm font-medium cursor-pointer transition-colors text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-md"
                                     activeClass="text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-900/10"
@@ -230,7 +230,7 @@ const Navbar = () => {
                                         key={link.to}
                                         to={link.to}
                                         smooth={true}
-                                        duration={1000}
+                                        duration={500}
                                         offset={-70}
                                         className="block px-3 py-3 rounded-lg text-base font-medium transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer"
                                         onClick={() => setIsMobileMenuOpen(false)}

@@ -22,9 +22,8 @@ class Squat(BaseExercise):
             return None
 
     def count_reps(self, landmarks, stage, counter):
-        # Calculate knee angle (hip-knee-ankle)
-        # Landmark IDs: Hip=24, Knee=26, Ankle=28 (right side)
-        angle = self.pose_detector.calculate_angle(landmarks, 24, 26, 28)
+        # Calculate knee angle dynamically (Right: 24, 26, 28 | Left: 23, 25, 27)
+        angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
         
         # --- Front View Fallback Logic ---
         # Calculate vertical span of thigh vs shin
@@ -50,14 +49,30 @@ class Squat(BaseExercise):
             
         return counter, stage
 
-    def check_form(self, landmarks):
+    def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
+        
+        # Setup Pose Check
+        if counter == 0 and stage is None:
+            try:
+                knee_angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
+                hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
+                
+                if knee_angle < 120:
+                    return ["ℹ️ Setup: Stand up completely straight to reset"]
+                elif hip_angle < 140:
+                    return ["ℹ️ Setup: Lift your chest and stand tall"]
+                elif knee_angle > 150 and hip_angle > 150:
+                    return ["✅ Ready: Plant feet shoulder-width and lower hips to begin"]
+                else:
+                    return ["ℹ️ Setup: Stand straight with feet shoulder-width apart"]
+            except Exception:
+                pass
+
         try:
             # 1. Posture & Alignment
-            # Knee Angle: 24, 26, 28
-            knee_angle = self.pose_detector.calculate_angle(landmarks, 24, 26, 28)
-            # Hip Angle (Back alignment relative to thigh): 12, 24, 26
-            hip_angle = self.pose_detector.calculate_angle(landmarks, 12, 24, 26)
+            knee_angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
+            hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
             # Torso Angle (Shoulder - Hip - Vertical): Approximate vertical by using knee? 
             # Better: Check Shoulder-Hip-Knee (Hip hinge) - already captured in hip_angle
             
@@ -72,8 +87,8 @@ class Squat(BaseExercise):
                 
             # B. Neutral Spine (Posture)
             # Using Shoulder-Hip-Knee angle to approximate. 
-            # If < 75, excessive forward lean.
-            if hip_angle < 75:
+            # If < 60, excessive forward lean.
+            if hip_angle < 60:
                 feedback.append("⚠️ Chest Up: Maintain neutral spine (don't fold)")
             
             # C. Knee Valgus / Stability (Safety)

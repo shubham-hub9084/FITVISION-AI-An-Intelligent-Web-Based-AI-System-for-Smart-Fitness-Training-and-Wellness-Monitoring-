@@ -81,10 +81,15 @@ def generate_frames():
                     user_sessions[uid]['repetitions'] = counter
                     user_sessions[uid]['engine'].log_rep()
                     # Run DB update in a background thread to prevent stutter during reps
-                    threading.Thread(target=progress_tracker.update_active_session_reps, args=(uid, counter), daemon=True).start()
+                    # log_rep also calls update_active_session_reps internally
+                    threading.Thread(
+                        target=progress_tracker.log_rep, 
+                        args=(uid, user_sessions[uid]['exercise'], counter), 
+                        daemon=True
+                    ).start()
 
             # Form & Safety Analysis
-            feedback = primary_sess['corrector'].analyze_form(landmarks)
+            feedback = primary_sess['corrector'].analyze_form(landmarks, stage=stage, counter=counter)
             alerts = safety_alerts.perform_safety_check(landmarks)
             
             # Sync findings to all active sessions
@@ -175,17 +180,20 @@ def stop_session():
     duration = int(time.time() - sess['start_time'])
     stats = sess['monitor'].get_stats()
     
-    # Save workout to DB
-    workout_id = progress_tracker.save_workout(
-        user_id=user_id,
-        exercise_type=sess['exercise'],
-        repetitions=stats["repetitions"],
-        duration=duration
-    )
-    
-    # Clear active session in DB
-    progress_tracker.end_active_session(user_id)
-    
+    # Save workout to DB and clear active session safely
+    workout_id = None
+    try:
+        workout_id = progress_tracker.save_workout(
+            user_id=user_id,
+            exercise_type=sess['exercise'],
+            repetitions=stats["repetitions"],
+            duration=duration
+        )
+        progress_tracker.end_active_session(user_id)
+    except Exception as e:
+        print(f"Database error during stop_session: {e}")
+        # Proceed with generating report even if DB fails so UI doesn't freeze
+        
     # Generate final report
     report = sess['engine'].generate_report()
     

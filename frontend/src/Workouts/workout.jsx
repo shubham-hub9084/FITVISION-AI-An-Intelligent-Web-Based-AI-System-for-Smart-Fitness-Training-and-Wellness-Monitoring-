@@ -208,24 +208,12 @@ const Workouts = () => {
 
                   {/* Card Body */}
                   <div className="p-5 flex flex-col flex-1">
-                    {/* Muscle group tag */}
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 w-fit ${c.bg} ${c.text}`}>
-                      <i className={`${workout.icon} text-xs`}></i>
-                      {workout.muscleGroup}
-                    </div>
 
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{workout.title}</h3>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex-1">{workout.description}</p>
 
 
 
-                    {/* AI Badge */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                        <i className="ri-robot-line"></i>
-                        Live AI feedback enabled
-                      </span>
-                    </div>
 
                     {/* CTA */}
                     <button
