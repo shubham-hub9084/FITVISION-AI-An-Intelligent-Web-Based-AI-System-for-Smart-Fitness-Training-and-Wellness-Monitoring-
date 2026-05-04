@@ -22,8 +22,16 @@ class Squat(BaseExercise):
             return None
 
     def count_reps(self, landmarks, stage, counter):
-        # Calculate knee angle dynamically (Right: 24, 26, 28 | Left: 23, 25, 27)
-        angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
+        r_angle = self.pose_detector.calculate_angle(landmarks, 24, 26, 28)
+        l_angle = self.pose_detector.calculate_angle(landmarks, 23, 25, 27)
+        
+        right_vis = sum(landmarks[idx][4] for idx in [24, 26, 28]) / 3 if len(landmarks) > 0 and len(landmarks[0]) > 4 else 1.0
+        left_vis = sum(landmarks[idx][4] for idx in [23, 25, 27]) / 3 if len(landmarks) > 0 and len(landmarks[0]) > 4 else 1.0
+        
+        if right_vis > 0.5 and left_vis > 0.5:
+            angle = (r_angle + l_angle) / 2
+        else:
+            angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
         
         # --- Front View Fallback Logic ---
         # Calculate vertical span of thigh vs shin
@@ -52,22 +60,25 @@ class Squat(BaseExercise):
     def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
         
-        # Setup Pose Check
-        if counter == 0 and stage is None:
-            try:
-                knee_angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
-                hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
-                
-                if knee_angle < 120:
-                    return ["ℹ️ Setup: Stand up completely straight to reset"]
-                elif hip_angle < 140:
-                    return ["ℹ️ Setup: Lift your chest and stand tall"]
-                elif knee_angle > 150 and hip_angle > 150:
-                    return ["✅ Ready: Plant feet shoulder-width and lower hips to begin"]
+        # Setup and Idle Pose Check
+        try:
+            knee_angle = self.get_best_side_angle(landmarks, [24, 26, 28], [23, 25, 27])
+            hip_angle = self.get_best_side_angle(landmarks, [12, 24, 26], [11, 23, 25])
+            
+            if knee_angle > 150 and hip_angle > 150:
+                if counter == 0:
+                    return ["✅ Ready: Lower your hips to start."]
                 else:
-                    return ["ℹ️ Setup: Stand straight with feet shoulder-width apart"]
-            except Exception:
-                pass
+                    return ["ℹ️ Idle: Lower your hips to resume."]
+            elif counter == 0:
+                if knee_angle < 120:
+                    return ["ℹ️ Setup: Stand straight to reset."]
+                elif hip_angle < 140:
+                    return ["ℹ️ Setup: Lift chest and stand tall."]
+                else:
+                    return ["ℹ️ Setup: Stand straight with feet apart."]
+        except Exception:
+            pass
 
         try:
             # 1. Posture & Alignment
@@ -80,27 +91,28 @@ class Squat(BaseExercise):
             
             # A. Depth Check (Movement Quality)
             if knee_angle < 70:
-                feedback.append("⚠️ Too Deep: Limit range to protect knees")
+                feedback.append("⚠️ Too Deep: Don't go down that far.")
             elif 95 < knee_angle < 140: 
                 # Not parallel yet
-                feedback.append("ℹ️ Go Lower: Thighs should be parallel to floor")
+                feedback.append("ℹ️ Go Lower: Try to squat a little deeper.")
                 
             # B. Neutral Spine (Posture)
             # Using Shoulder-Hip-Knee angle to approximate. 
             # If < 60, excessive forward lean.
             if hip_angle < 60:
-                feedback.append("⚠️ Chest Up: Maintain neutral spine (don't fold)")
+                feedback.append("⚠️ Chest Up: Don't lean forward too much.")
             
             # C. Knee Valgus / Stability (Safety)
-            # 2D estimation: Knee x vs Ankle x interaction?
-            # Hard to specificy without calibration, but we can check if knee is wobbling 
-            # by comparing relative horizontal distance if reliable. 
-            # Sticking to valid angle checks for now.
+            # Compare horizontal distance between knees vs ankles.
+            knee_dist = abs(landmarks[25][1] - landmarks[26][1])
+            ankle_dist = abs(landmarks[27][1] - landmarks[28][1])
+            if ankle_dist > 0 and knee_dist < ankle_dist * 0.75:
+                feedback.append("⚠️ Knees In: Push your knees out as you squat.")
             
             # D. Extension (Movement Quality)
             # At top (angle > 160), hips should be extended.
             if knee_angle > 165 and hip_angle < 160:
-                feedback.append("⚠️ Full Hip Extension: Squeeze glutes at top")
+                feedback.append("⚠️ Stand Tall: Stand up all the way between squats.")
 
             # --- AI Model Integration (Advanced Form) ---
             if self.ml_model:
@@ -116,15 +128,15 @@ class Squat(BaseExercise):
                     if prediction == 1:
                         # Only show "Perfect" if no other warnings
                         if not any("⚠️" in f for f in feedback):
-                            feedback.append("✨ AI Coach: Excellent form & control!")
+                            feedback.append("✨ AI Coach: Great squat form!")
                     else:
                         if not any("⚠️" in f for f in feedback):
-                             feedback.append("⚠️ AI Coach: Detected subtle form breakdown")
+                             feedback.append("⚠️ AI Coach: Keep an eye on your depth and back.")
                 except Exception:
                     pass
             
             if not feedback:
-                feedback.append("✅ Correct: Maintain rhythm")
+                feedback.append("✅ Good Squat")
                 
         except Exception:
             feedback.append("Unable to analyze form")

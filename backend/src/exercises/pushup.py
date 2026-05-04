@@ -21,8 +21,16 @@ class Pushup(BaseExercise):
             print(f"❌ Failed to load ML Model: {e}")
             return None
     def count_reps(self, landmarks, stage, counter):
-        # Calculate elbow angle dynamically (Right: 12, 14, 16 | Left: 11, 13, 15)
-        angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
+        r_angle = self.pose_detector.calculate_angle(landmarks, 12, 14, 16)
+        l_angle = self.pose_detector.calculate_angle(landmarks, 11, 13, 15)
+        
+        right_vis = sum(landmarks[idx][4] for idx in [12, 14, 16]) / 3 if len(landmarks) > 0 and len(landmarks[0]) > 4 else 1.0
+        left_vis = sum(landmarks[idx][4] for idx in [11, 13, 15]) / 3 if len(landmarks) > 0 and len(landmarks[0]) > 4 else 1.0
+        
+        if right_vis > 0.5 and left_vis > 0.5:
+            angle = (r_angle + l_angle) / 2
+        else:
+            angle = self.get_best_side_angle(landmarks, [12, 14, 16], [11, 13, 15])
         
         # Check if going down
         if angle < self.thresholds["pushup"]["down"]:
@@ -38,28 +46,37 @@ class Pushup(BaseExercise):
     def check_form(self, landmarks, stage=None, counter=0):
         feedback = []
         
-        # Setup Pose Check
-        if counter == 0 and stage is None:
-            try:
-                body_alignment = self.get_best_side_angle(landmarks, [12, 24, 28], [11, 23, 27])
-                shoulder_y = landmarks[12][2]
-                ankle_y = landmarks[28][2]
-                
-                dy = abs(ankle_y - shoulder_y)
-                dx = abs(landmarks[28][1] - landmarks[12][1])
-                
-                if dy > dx * 1.5:
-                    return ["ℹ️ Setup: Transition to the floor. Place hands wider than shoulders."]
-                elif dy > dx:
-                    return ["ℹ️ Setup: Get into a horizontal plank position."]
-                elif body_alignment < 140:
-                    return ["ℹ️ Setup: Align your shoulders, hips, and ankles into a straight line."]
-                elif body_alignment >= 150:
-                    return ["✅ Ready: Keep your core tight and lower your chest."]
+        # Setup and Idle Pose Check
+        try:
+            body_alignment = self.get_best_side_angle(landmarks, [12, 24, 28], [11, 23, 27])
+            shoulder_y = landmarks[12][2]
+            ankle_y = landmarks[28][2]
+            
+            dy = abs(ankle_y - shoulder_y)
+            dx = abs(landmarks[28][1] - landmarks[12][1])
+            
+            if dy > dx * 1.5:
+                if counter == 0:
+                    return ["ℹ️ Setup: Get on the floor with wide hands."]
                 else:
-                    return ["ℹ️ Setup: Keep your body straight like a plank."]
-            except Exception:
-                pass
+                    return ["ℹ️ Idle: Get back on the floor."]
+            elif dy > dx:
+                if counter == 0:
+                    return ["ℹ️ Setup: Get into a plank position."]
+                else:
+                    return ["ℹ️ Idle: Get back into a plank."]
+            elif body_alignment < 130:
+                if counter == 0:
+                    return ["ℹ️ Setup: Make your body straight like a board."]
+                else:
+                    return ["ℹ️ Idle: Straighten your body."]
+            elif counter == 0:
+                if body_alignment >= 150:
+                    return ["✅ Ready: Lower your chest to start."]
+                else:
+                    return ["ℹ️ Setup: Keep your body straight."]
+        except Exception:
+            pass
 
         try:
             # 1. Posture & Alignment
@@ -75,37 +92,33 @@ class Pushup(BaseExercise):
             # We want elbows roughly 45 deg, so Elbow Y should be significantly lower (greater value) than Shoulder Y.
             
             # A. Core Stability (Safety)
-            if body_alignment < 165:
-                feedback.append("⚠️ Keep Body Straight: Don't sag or pike hips")
+            if body_alignment < 160:
+                hip_y = landmarks[24][2]
+                shoulder_y_core = landmarks[12][2]
+                ankle_y_core = landmarks[28][2]
+                
+                if hip_y > (shoulder_y_core + ankle_y_core) / 2:
+                    feedback.append("⚠️ Hips Low: Keep your hips up and body straight.")
+                else:
+                    feedback.append("⚠️ Hips High: Lower your hips to make a straight line.")
                 
             # B. Range of Motion (Movement Quality)
-            if elbow_angle > 170:
-                pass # Lockout is okay, but soft lock preferred
-                # feedback.append("ℹ️ Soft Elbows: Don't snap extension")
-            
-            # In 'down' phase checks (dynamic check using stage would be better, but strict form check works too)
-            # If angle is somewhat low but not deep enough
             if 90 < elbow_angle < 120:
-                 feedback.append("ℹ️ Go Deeper: Chest to floor")
+                 feedback.append("ℹ️ Go Deeper: Lower your chest closer to the floor.")
 
             # C. Elbow Flare Check
-            # Normalize Y coords? simple check:
-            # If we are horizontal (pushup position), shoulder Y ~ hip Y. 
-            # If elbow Y is close to shoulder Y, that's a wide flare (T-shape).
-            # Effective pushup: Arrow shape. 
-            # But in side view, flare is hard to see. 
-            # In front view, flare is obvious.
-            # Assuming side view mostly for pushups:
-            # We can check elbow X relative to shoulder/wrist X? 
-            # Let's stick to Body Alignment as primary Safety check.
+            elbow_y = min(landmarks[13][2], landmarks[14][2])
+            shoulder_top_y = min(landmarks[11][2], landmarks[12][2])
+            
+            if elbow_angle < 130 and abs(elbow_y - shoulder_top_y) < 30:
+                feedback.append("⚠️ Elbows: Keep elbows closer to your sides.")
             
             # D. Cervical Spine (Head Position)
-            # Use Nose (0) and highest shoulder to robustly check if head is dropping
             nose_y = landmarks[0][2]
             shoulder_y = min(landmarks[11][2], landmarks[12][2])
             
-            if nose_y > shoulder_y: # Head dropping below shoulders
-                feedback.append("⚠️ Head Neutral: Don't drop your head")
+            if nose_y > shoulder_y:
+                feedback.append("⚠️ Head Up: Look slightly ahead, don't drop your head.")
 
             # --- AI Model Integration (Advanced Form) ---
             if self.ml_model:
@@ -118,15 +131,15 @@ class Pushup(BaseExercise):
                     
                     if prediction == 1:
                         if not any("⚠️" in f for f in feedback):
-                            feedback.append("✨ AI Coach: Excellent form & control!")
+                            feedback.append("✨ AI Coach: Awesome pushup!")
                     else:
                         if not any("⚠️" in f for f in feedback):
-                             feedback.append("⚠️ AI Coach: Detected subtle form breakdown")
+                             feedback.append("⚠️ AI Coach: Try to keep your body straight.")
                 except Exception:
                     pass
 
             if not feedback:
-                feedback.append("✅ Correct: Solid Plank Position")
+                feedback.append("✅ Good Pushup")
                 
         except Exception:
              feedback.append("Unable to analyze form")
