@@ -20,6 +20,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { FloatingAiAssistant } from './components/ui/glowing-ai-chat-assistant';
 import ScrollToTop from './components/ScrollToTop';
+import Navbar from './components/Navbar';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -46,6 +47,7 @@ const App = () => {
         <ThemeProvider>
           <FloatingAiAssistant />
           <ScrollToTop />
+          <Navbar />
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path='/' element={<HomePage />} />

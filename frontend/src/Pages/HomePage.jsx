@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import Navbar from '../components/Navbar'
 import HeroSection from './HeroSection/HeroSection'
 import Getstarted from './Getstarted/Getstarted'
 import HowItWorks from './HowItWorks/HowItWorks'
@@ -16,7 +15,6 @@ const HomePage = () => {
   return (
     <div className="min-h-screen dark:bg-slate-900 transition-colors duration-300">
 
-      <Navbar />
       <main id="main-content">
         <HeroSection setShowGetStartedModal={setShowGetStartedModal} />
         <KeyBenefits />

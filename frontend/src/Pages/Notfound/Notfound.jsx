@@ -11,7 +11,7 @@ const NotFound = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4 transition-colors duration-300">
+    <div className="min-h-screen pt-16 bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4 transition-colors duration-300">
       <div className="max-w-2xl w-full text-center space-y-8" data-aos="fade-up">
 
         {/* Animated Icon/Illustration */}
