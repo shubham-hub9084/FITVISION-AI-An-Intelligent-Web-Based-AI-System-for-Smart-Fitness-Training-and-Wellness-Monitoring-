@@ -386,8 +386,8 @@ const CaloriesCalculator = () => {
                   <button
                     onClick={calculateAll}
                     disabled={!isValid()}
-                    className={`px-8 py-3 rounded-lg font-bold text-white shadow-lg shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 ${isValid()
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
+                    className={`px-8 py-3.5 rounded-xl font-bold text-white transition-all duration-300 active:scale-95 transform ${isValid()
+                      ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5'
                       : 'bg-gray-400 cursor-not-allowed shadow-none'
                       }`}
                   >
@@ -401,7 +401,7 @@ const CaloriesCalculator = () => {
                       setActivity('moderate');
                       setResults(null);
                     }}
-                    className="px-8 py-3 rounded-lg font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                    className="px-8 py-3.5 rounded-xl font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300 active:scale-95 shadow-sm"
                   >
                     Clear Form
                   </button>

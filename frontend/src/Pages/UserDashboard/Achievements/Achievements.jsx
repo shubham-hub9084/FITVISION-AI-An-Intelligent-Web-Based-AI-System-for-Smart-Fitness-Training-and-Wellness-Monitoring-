@@ -1,7 +1,9 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Achievements = ({ achievements, streaks = { current: 0, longest: 0 } }) => {
+    const [selectedAchievement, setSelectedAchievement] = useState(null);
+
     const containerVariants = {
         hidden: { opacity: 0 },
         show: {
@@ -87,9 +89,9 @@ const Achievements = ({ achievements, streaks = { current: 0, longest: 0 } }) =>
                         </div>
                         <div className="text-xs font-bold uppercase tracking-widest text-purple-400 dark:text-purple-300">Locked</div>
                     </div>
-                    <div className="text-center p-5 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
-                        <div className="text-3xl font-black text-slate-600 dark:text-slate-400 mb-1">0</div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Events</div>
+                    <div className="text-center p-5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/10 rounded-2xl border border-orange-100 dark:border-orange-800/30">
+                        <div className="text-3xl font-black text-orange-600 dark:text-orange-400 mb-1">{streaks.current}</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-orange-400 dark:text-orange-500">Streak</div>
                     </div>
                 </div>
 
@@ -99,10 +101,11 @@ const Achievements = ({ achievements, streaks = { current: 0, longest: 0 } }) =>
                         <motion.div
                             variants={itemVariants}
                             key={achievement.id}
-                            className={`relative overflow-hidden p-6 rounded-3xl transition-all duration-300 ${
+                            onClick={() => setSelectedAchievement(achievement)}
+                            className={`relative overflow-hidden p-6 rounded-3xl transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-95 ${
                                 achievement.earned
                                     ? "bg-gradient-to-br from-gray-900 to-slate-800 text-white shadow-xl shadow-indigo-900/20 border border-slate-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/30"
-                                    : "bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 opacity-80 backdrop-blur-sm"
+                                    : "bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 opacity-80 backdrop-blur-sm hover:border-gray-300 dark:hover:border-slate-600"
                             }`}
                         >
                             {/* Premium Glow Effect for Earned Badges */}
@@ -171,6 +174,106 @@ const Achievements = ({ achievements, streaks = { current: 0, longest: 0 } }) =>
                     ))}
                 </div>
             </div>
+
+            {/* Achievement Modal */}
+            <AnimatePresence>
+                {selectedAchievement && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedAchievement(null)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-50"
+                        >
+                            <div className={`relative overflow-hidden rounded-3xl p-8 shadow-2xl border ${
+                                selectedAchievement.earned
+                                    ? "bg-gradient-to-b from-gray-900 to-slate-800 border-indigo-500/30"
+                                    : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
+                            }`}>
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setSelectedAchievement(null)}
+                                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 transition-colors text-gray-500 dark:text-gray-300"
+                                >
+                                    <i className="ri-close-line text-xl"></i>
+                                </button>
+
+                                {/* Modal Content */}
+                                <div className="flex flex-col items-center text-center mt-4">
+                                    <div
+                                        className={`w-28 h-28 rounded-3xl flex items-center justify-center text-5xl mb-6 shadow-2xl relative ${
+                                            selectedAchievement.earned
+                                                ? "bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 text-white ring-4 ring-white/20"
+                                                : "bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500"
+                                        }`}
+                                    >
+                                        {selectedAchievement.earned && (
+                                            <div className="absolute inset-0 bg-white/20 rounded-3xl animate-pulse"></div>
+                                        )}
+                                        <i className={selectedAchievement.icon}></i>
+                                        {selectedAchievement.earned && (
+                                            <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center border-4 border-slate-800 shadow-lg text-xl">
+                                                <i className="ri-check-line text-white"></i>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className={`px-4 py-1.5 rounded-full text-sm font-bold tracking-widest mb-4 ${
+                                        selectedAchievement.earned 
+                                            ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" 
+                                            : "bg-gray-200 dark:bg-slate-700 text-gray-500"
+                                    }`}>
+                                        {selectedAchievement.points} POINTS
+                                    </div>
+
+                                    <h3 className={`text-2xl font-black mb-3 ${selectedAchievement.earned ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                                        {selectedAchievement.title}
+                                    </h3>
+                                    
+                                    <p className={`text-base mb-8 ${selectedAchievement.earned ? "text-slate-300" : "text-gray-500 dark:text-slate-400"}`}>
+                                        {selectedAchievement.description}
+                                    </p>
+
+                                    <div className="w-full bg-black/20 dark:bg-black/40 rounded-2xl p-5 border border-white/5 dark:border-white/10">
+                                        <div className="flex justify-between text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">
+                                            <span>Progress</span>
+                                            <span className={selectedAchievement.earned ? "text-indigo-300" : "text-gray-900 dark:text-white"}>
+                                                {selectedAchievement.progress} / {selectedAchievement.total}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-slate-900 rounded-full h-3 overflow-hidden shadow-inner">
+                                            <div
+                                                className={`h-3 rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+                                                    selectedAchievement.earned 
+                                                        ? "bg-gradient-to-r from-indigo-500 to-purple-500" 
+                                                        : "bg-gray-400 dark:bg-slate-600"
+                                                }`}
+                                                style={{ width: `${(selectedAchievement.progress / selectedAchievement.total) * 100}%` }}
+                                            >
+                                                {selectedAchievement.earned && (
+                                                    <div className="absolute inset-0 bg-white/20 animate-shimmer" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)', transform: 'skewX(-20deg)' }}></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {selectedAchievement.earned && (
+                                            <p className="text-emerald-400 text-sm font-semibold mt-4 flex items-center justify-center gap-2">
+                                                <i className="ri-verified-badge-fill"></i> Award Unlocked!
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };

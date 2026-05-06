@@ -91,9 +91,9 @@ const UserDashboard = () => {
                         <div className="mt-4 sm:mt-0 flex gap-3">
                             <button
                                 onClick={() => setShowCameraWorkout(true)}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer flex items-center gap-2"
+                                className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 whitespace-nowrap cursor-pointer flex items-center gap-2"
                             >
-                                <i className="ri-camera-line text-lg"></i>
+                                <i className="ri-camera-line text-lg group-hover:scale-110 transition-transform"></i>
                                 Start AI Workout
                             </button>
                         </div>

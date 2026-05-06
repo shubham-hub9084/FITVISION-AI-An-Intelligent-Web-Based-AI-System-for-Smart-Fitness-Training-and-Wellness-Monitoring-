@@ -353,6 +353,11 @@ class ProgressTracker:
         finally:
             cur.close()
             conn.close()
+            
+        streaks = self.get_streaks(user_id)
+        current_streak = streaks['current']
+        longest_streak = streaks['longest']
+
         return [
             {"id": "first_steps",  "title": "First Steps",     "description": "Complete 5 workouts",
              "points": 50,  "earned": total_workouts >= 5, "icon": "ri-run-line",
@@ -363,6 +368,24 @@ class ProgressTracker:
             {"id": "consistency",  "title": "Consistency King", "description": "Work out on 3 distinct days",
              "points": 150, "earned": distinct_days >= 3,   "icon": "ri-calendar-check-line",
              "progress": min(int(distinct_days), 3),         "total": 3},
+            {"id": "streak_3", "title": "3-Day Streak", "description": "Maintain a 3-day workout streak",
+             "points": 100, "earned": longest_streak >= 3, "icon": "ri-fire-fill",
+             "progress": min(int(longest_streak), 3), "total": 3},
+            {"id": "workout_warrior", "title": "Workout Warrior", "description": "Complete 50 workouts",
+             "points": 200, "earned": total_workouts >= 50, "icon": "ri-sword-line",
+             "progress": min(int(total_workouts), 50), "total": 50},
+            {"id": "streak_7", "title": "1-Week Streak", "description": "Maintain a 7-day workout streak",
+             "points": 300, "earned": longest_streak >= 7, "icon": "ri-vip-crown-fill",
+             "progress": min(int(longest_streak), 7), "total": 7},
+            {"id": "rep_master", "title": "Rep Master", "description": "Complete 5000 total reps",
+             "points": 250, "earned": total_reps >= 5000, "icon": "ri-fire-line",
+             "progress": min(int(total_reps), 5000), "total": 5000},
+            {"id": "dedication", "title": "Pure Dedication", "description": "Work out on 30 distinct days",
+             "points": 300, "earned": distinct_days >= 30, "icon": "ri-medal-line",
+             "progress": min(int(distinct_days), 30), "total": 30},
+            {"id": "streak_30", "title": "Month of Fire", "description": "Maintain a 30-day workout streak",
+             "points": 1000, "earned": longest_streak >= 30, "icon": "ri-gem-fill",
+             "progress": min(int(longest_streak), 30), "total": 30},
         ]
 
     # ------------------------------------------------------------------ #

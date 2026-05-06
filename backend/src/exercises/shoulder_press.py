@@ -64,13 +64,13 @@ class ShoulderPress(BaseExercise):
             if wrist_y > shoulder_y + (shoulder_width_setup * 0.4): 
                 if counter == 0:
                     if elbow_angle > 150:
-                        return ["ℹ️ Setup: Bring hands up."]
+                        return ["ℹ️ Setup: Bring dumbbells up to shoulder height."]
                     else:
-                        return ["ℹ️ Setup: Raise hands higher."]
+                        return ["ℹ️ Setup: Raise dumbbells higher, to shoulder level."]
                 else:
-                    return ["ℹ️ Idle: Raise hands to resume."]
+                    return ["ℹ️ Idle: Put your hands up to shoulder level to resume."]
             elif counter == 0 and stage is None:
-                return ["✅ Ready: Press hands up."]
+                return ["✅ Ready: Brace your core and press the weights overhead."]
         except Exception:
             pass
 
@@ -97,11 +97,11 @@ class ShoulderPress(BaseExercise):
                  
                  # In pixel coordinates, higher Y means physically lower.
                  if left_wrist_y > right_wrist_y + 30:
-                     feedback.append("⚠️ Uneven: Your right hand is lower.")
+                     feedback.append("⚠️ Symmetry: Your Right hand is lower. Push evenly to align both hands.")
                  elif right_wrist_y > left_wrist_y + 30:
-                     feedback.append("⚠️ Uneven: Your left hand is lower.")
+                     feedback.append("⚠️ Symmetry: Your Left hand is lower. Push evenly to align both hands.")
                  else:
-                     feedback.append("⚠️ Uneven: Push evenly.")
+                     feedback.append("⚠️ Symmetry: Push evenly. Keep your arms aligned.")
 
              # 3. Range of Motion
              # Full Lockout
@@ -128,7 +128,7 @@ class ShoulderPress(BaseExercise):
              shoulder_to_nose = shoulder_y_avg - nose_y
              
              if shoulder_width > 0 and shoulder_to_nose < shoulder_width * 0.35:
-                 feedback.append("⚠️ Shrugging: Relax your shoulders.")
+                 feedback.append("⚠️ Posture: Don't shrug. Keep shoulders down away from ears.")
 
              if not feedback:
                   feedback.append("✅ Good Press")

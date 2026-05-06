@@ -274,6 +274,7 @@ def get_progress():
     total_errors = progress_tracker.get_total_errors(user_id)
     today_errors = progress_tracker.get_today_errors(user_id)
     errors_by_workout = progress_tracker.get_errors_by_workout(user_id)
+    streaks = progress_tracker.get_streaks(user_id)
     
     return jsonify({
         "history": history,
@@ -282,7 +283,8 @@ def get_progress():
         "improvements": improvements,
         "total_errors": total_errors,
         "today_errors": today_errors,
-        "errors_by_workout": errors_by_workout
+        "errors_by_workout": errors_by_workout,
+        "streaks": streaks
     })
 
 

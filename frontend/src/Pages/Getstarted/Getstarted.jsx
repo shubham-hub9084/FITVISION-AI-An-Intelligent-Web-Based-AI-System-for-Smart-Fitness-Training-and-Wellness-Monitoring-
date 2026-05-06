@@ -62,7 +62,7 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
                 <p className="text-gray-700 dark:text-emerald-200/70 mb-8 px-6 font-medium">Create your account to unlock personalized AI tracking and progress insights.</p>
                 <button
                   onClick={handleSignIn}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/40 hover:-translate-y-1 active:translate-y-0 transition-all"
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 transform hover:-translate-y-1 active:scale-95 transition-all duration-300"
                 >
                   Join FitVision AI
                 </button>
@@ -140,10 +140,10 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-[1.5] bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-3"
+                    className="flex-[1.5] relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-emerald-500/30 hover:shadow-emerald-500/50 transform hover:-translate-y-1 active:scale-95 transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 group"
                   >
                     <span>INITIALIZE TRAINING</span>
-                    <i className="ri-arrow-right-line text-xl"></i>
+                    <i className="ri-arrow-right-line text-xl group-hover:translate-x-1 transition-transform"></i>
                   </button>
                 </div>
               </form>

@@ -62,17 +62,14 @@ const Contactus = () => {
               <div className="mt-6 sm:mt-8">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Follow Us</h4>
                 <div className="flex space-x-4">
-                  <a href="#" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                  <a href="https://www.instagram.com/shubham_sahu.en/" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <i className="ri-instagram-line text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"></i>
                   </a>
-                  <a href="#" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
-                    <i className="ri-youtube-line text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"></i>
-                  </a>
-                  <a href="#" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                  <a href="https://www.linkedin.com/in/shubham-sahu-586958274" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
                     <i className="ri-linkedin-line text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"></i>
                   </a>
-                  <a href="#" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
-                    <i className="ri-twitter-line text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"></i>
+                  <a href="https://github.com/shubham-hub9084" className="w-10 h-10 bg-gray-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                    <i className="ri-github-line text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400"></i>
                   </a>
                 </div>
               </div>

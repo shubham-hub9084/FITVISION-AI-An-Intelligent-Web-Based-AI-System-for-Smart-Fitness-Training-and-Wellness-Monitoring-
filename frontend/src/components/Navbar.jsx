@@ -104,7 +104,7 @@ const Navbar = () => {
                         {isHomePage && user && (
                             <button
                                 onClick={() => navigate("/dashboard")}
-                                className="hidden sm:block px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-full transition-colors shadow-sm shadow-emerald-200 dark:shadow-none"
+                                className="hidden sm:block relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-5 py-2 text-sm font-semibold rounded-full shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95"
                             >
                                 Dashboard
                             </button>
@@ -114,7 +114,7 @@ const Navbar = () => {
                         {!user && (
                             <button
                                 onClick={() => login()}
-                                className="px-5 py-2 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors shadow-sm text-sm"
+                                className="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-5 py-2 text-sm font-semibold rounded-full shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95"
                             >
                                 Sign In
                             </button>
@@ -258,7 +258,7 @@ const Navbar = () => {
                         {!user && (
                             <button
                                 onClick={() => login()}
-                                className="block w-full text-center px-3 py-3 mt-4 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                                className="block w-full text-center px-3 py-3 mt-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/30 transition-all duration-300 active:scale-95"
                             >
                                 Sign In
                             </button>

@@ -416,10 +416,10 @@ const MealPlans = () => {
                   <p className="text-gray-600 dark:text-gray-400 mt-1">{formData.calorieTarget} kcal • {formData.goal.replace('-', ' ')}</p>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={handleDownload} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition-colors shadow-md flex items-center gap-2">
+                  <button onClick={handleDownload} className="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2">
                     <i className="ri-file-pdf-line"></i> <span className="hidden sm:inline">Download PDF</span>
                   </button>
-                  <button onClick={() => { setCurrentStep(1); setGeneratedPlan(null); }} className="px-6 py-2 border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 rounded-lg font-semibold hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                  <button onClick={() => { setCurrentStep(1); setGeneratedPlan(null); }} className="px-6 py-3 border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 rounded-xl font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95">
                     Create New
                   </button>
                 </div>
@@ -498,10 +498,10 @@ const MealPlans = () => {
 
         {currentStep <= 4 && (
           <div className="mt-8 flex justify-between">
-            <button onClick={prevStep} disabled={currentStep === 1} className={`px-6 py-3 rounded-lg font-semibold ${currentStep === 1 ? 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-white hover:bg-gray-300 dark:hover:bg-slate-600'}`}>
+            <button onClick={prevStep} disabled={currentStep === 1} className={`px-8 py-3.5 rounded-xl font-bold transition-all duration-300 active:scale-95 ${currentStep === 1 ? 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 shadow-sm'}`}>
               Previous
             </button>
-            <button onClick={nextStep} disabled={!canProceed()} className={`px-6 py-3 rounded-lg font-semibold ${canProceed() ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
+            <button onClick={nextStep} disabled={!canProceed()} className={`px-8 py-3.5 rounded-xl font-bold transition-all duration-300 transform active:scale-95 ${canProceed() ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5' : 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
               {currentStep === 4 ? 'Generate Plan' : 'Next Step'}
             </button>
           </div>

@@ -32,14 +32,17 @@ const Footer = () => {
             </p>
 
             <div className="flex gap-4">
-              {['github', 'linkedin'].map((social, index) => (
+              {[
+                { name: 'github', url: 'https://github.com/shubham-hub9084' },
+                { name: 'linkedin', url: 'https://www.linkedin.com/in/shubham-sahu-586958274' }
+              ].map((social, index) => (
                 <a
                   key={index}
-                  href="#"
+                  href={social.url}
                   className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-gray-200 hover:bg-emerald-500 hover:text-white transition-all duration-300 hover:-translate-y-1 shadow-sm"
-                  aria-label={social}
+                  aria-label={social.name}
                 >
-                  <i className={`ri-${social}-line text-lg`}></i>
+                  <i className={`ri-${social.name}-line text-lg`}></i>
                 </a>
               ))}
             </div>
@@ -103,7 +106,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-300 text-sm text-center md:text-left">
-            © {new Date().getFullYear()} FitVision AI. All rights reserved.
+            © 2026 FitVision AI. All rights reserved.
           </p>
 
         </div>

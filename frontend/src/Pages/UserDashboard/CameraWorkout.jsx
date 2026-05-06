@@ -185,6 +185,13 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
 
 
     // 1. Exercise Selection Screen
+    const exerciseMeta = {
+        squat: { image: "/icons/squat.png", color: "from-blue-500 to-cyan-400", bg: "bg-blue-500/10", border: "hover:border-blue-400", shadow: "hover:shadow-blue-500/30", text: "group-hover:text-blue-400" },
+        pushup: { image: "/icons/pushup.png", color: "from-emerald-500 to-teal-400", bg: "bg-emerald-500/10", border: "hover:border-emerald-400", shadow: "hover:shadow-emerald-500/30", text: "group-hover:text-emerald-400" },
+        curl: { image: "/icons/curl.png", color: "from-purple-500 to-fuchsia-400", bg: "bg-purple-500/10", border: "hover:border-purple-400", shadow: "hover:shadow-purple-500/30", text: "group-hover:text-purple-400" },
+        shoulder_press: { image: "/icons/shoulder_press.png", color: "from-orange-500 to-rose-400", bg: "bg-orange-500/10", border: "hover:border-orange-400", shadow: "hover:shadow-orange-500/30", text: "group-hover:text-orange-400" }
+    };
+
     if (!selectedExercise) {
         return (
             <AnimatePresence>
@@ -192,32 +199,67 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
                 >
-                    <div className="w-full max-w-2xl bg-gray-900 rounded-2xl p-8 border border-gray-800">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-white">Select Exercise</h2>
-                            <button onClick={onClose} className="text-gray-400 hover:text-white">
-                                <i className="ri-close-line text-2xl"></i>
+                    <motion.div 
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        className="relative w-full max-w-4xl bg-gradient-to-b from-gray-900 to-slate-900 rounded-3xl p-8 sm:p-12 border border-white/10 shadow-2xl overflow-hidden"
+                    >
+                        {/* Premium Background Glow */}
+                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+
+                        <div className="relative z-10 flex justify-between items-start mb-10">
+                            <div>
+                                <h2 className="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight mb-2">
+                                    Select Your Workout
+                                </h2>
+                                <p className="text-gray-400 text-sm sm:text-base font-medium">
+                                    Choose an exercise to start your AI-powered coaching session.
+                                </p>
+                            </div>
+                            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/5">
+                                <i className="ri-close-line text-xl"></i>
                             </button>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {exercises.map((ex) => (
-                                <button
-                                    key={ex.id}
-                                    onClick={() => startSession(ex.id)}
-                                    className="p-6 bg-gray-800 hover:bg-emerald-600/20 border border-gray-700 hover:border-emerald-500 rounded-xl transition-all text-left group"
-                                >
-                                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 mb-2">
-                                        {ex.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-400">
-                                        {ex.description}
-                                    </p>
-                                </button>
-                            ))}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {exercises.map((ex, index) => {
+                                const meta = exerciseMeta[ex.id] || exerciseMeta.squat;
+                                return (
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        key={ex.id}
+                                        onClick={() => startSession(ex.id)}
+                                        className={`relative group p-6 sm:p-8 bg-white/5 rounded-2xl border border-white/10 transition-all duration-300 text-left overflow-hidden hover:bg-white/10 ${meta.border} shadow-lg ${meta.shadow}`}
+                                    >
+                                        {/* Hover Gradient Overlay */}
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${meta.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                                        
+                                        <div className="relative z-10 flex items-start gap-5">
+                                            <div className={`w-16 h-16 rounded-2xl flex flex-shrink-0 items-center justify-center shadow-inner bg-gray-800 border border-gray-700 transition-colors duration-300 group-hover:border-transparent overflow-hidden ${meta.text}`}>
+                                                <img src={meta.image} alt={ex.name} className="w-full h-full object-cover mix-blend-screen opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+                                            </div>
+                                            <div>
+                                                <h3 className={`text-xl font-bold text-white mb-2 transition-colors duration-300 ${meta.text}`}>
+                                                    {ex.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-400 font-medium leading-relaxed">
+                                                    {ex.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </motion.button>
+                                );
+                            })}
                         </div>
-                    </div>
+                    </motion.div>
                 </motion.div>
             </AnimatePresence>
         );
@@ -268,7 +310,7 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
 
                         <button
                             onClick={onClose}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors"
+                            className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 active:scale-95 transform hover:-translate-y-0.5"
                         >
                             Return to Dashboard
                         </button>
@@ -391,7 +433,7 @@ const CameraWorkout = ({ user_id, onClose, onWorkoutComplete, initialExerciseId 
                     <div className="p-4 bg-gray-900 border-t border-gray-800 flex justify-center">
                         <button
                             onClick={stopSession}
-                            className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all active:scale-95"
+                            className="relative overflow-hidden bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all duration-300 active:scale-95 transform hover:-translate-y-0.5"
                         >
                             Finish Workout
                         </button>
