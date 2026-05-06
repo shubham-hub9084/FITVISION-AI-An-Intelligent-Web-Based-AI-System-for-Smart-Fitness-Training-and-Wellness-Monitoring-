@@ -29,7 +29,7 @@ const UserDashboard = () => {
     const loadDashboardData = async () => {
         if (!user?.id) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/progress?user_id=${user.id}`);
+            const response = await fetch(`${config.API_BASE_URL}/api/progress?user_id=${user.id}`);
             const data = await response.json();
 
             if (data.total_stats) {
