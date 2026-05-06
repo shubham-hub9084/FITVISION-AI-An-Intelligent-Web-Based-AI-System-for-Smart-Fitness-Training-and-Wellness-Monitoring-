@@ -3,7 +3,7 @@ AI Fitness Trainer - Flask Web Application
 Main application file with routes and video streaming
 """
 
-from flask import Flask, render_template, Response, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 import cv2
 import sys
@@ -114,10 +114,7 @@ def generate_frames():
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/')
-def index():
-    """Main page"""
-    return render_template('index.html')
+
 
 
 @app.route('/video_feed')
@@ -327,5 +324,5 @@ def get_exercises():
 
 if __name__ == '__main__':
     print("🏋️ Starting AI Fitness Trainer Backend...")
-    print("📱 Dashboard available at: http://localhost:5000/dashboard")
+    print("📱 Backend API running at: http://localhost:5000")
     app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
