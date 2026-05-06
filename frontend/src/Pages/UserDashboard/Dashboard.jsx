@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import BackButton from '../../components/BackButton';
 import CameraWorkout from './CameraWorkout';
 import Overview from './Overview/Overview';
