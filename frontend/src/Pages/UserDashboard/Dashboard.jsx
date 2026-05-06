@@ -24,7 +24,7 @@ const UserDashboard = () => {
         totalErrors: 0,
         todayErrors: 0,
         improvements: [],
-        errorsByWorkout: {}
+        history: []
     });
 
     const loadDashboardData = async () => {
@@ -41,7 +41,7 @@ const UserDashboard = () => {
                     totalErrors: data.total_errors || 0,
                     todayErrors: data.today_errors || 0,
                     improvements: data.improvements || [],
-                    errorsByWorkout: data.errors_by_workout || {},
+                    history: data.history || [],
                     streaks: data.streaks || { current: 0, longest: 0 }
                 });
             }

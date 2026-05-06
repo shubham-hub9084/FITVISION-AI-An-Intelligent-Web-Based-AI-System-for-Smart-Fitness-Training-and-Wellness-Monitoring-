@@ -159,15 +159,26 @@ class ProgressTracker:
         conn = self._conn()
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
-            q = "SELECT * FROM workouts WHERE 1=1"
+            q = """
+                SELECT w.*, 
+                       (SELECT COUNT(*) FROM form_errors e WHERE e.workout_id = w.id) as error_count
+                FROM workouts w 
+                WHERE 1=1
+            """
             p = []
             if user_id:
-                q += " AND user_id = %s"; p.append(user_id)
+                q += " AND w.user_id = %s"; p.append(user_id)
             if exercise_type:
-                q += " AND exercise_type = %s"; p.append(exercise_type)
-            q += " ORDER BY completed_at DESC LIMIT %s"; p.append(limit)
+                q += " AND w.exercise_type = %s"; p.append(exercise_type)
+            q += " ORDER BY w.completed_at DESC LIMIT %s"; p.append(limit)
             cur.execute(q, tuple(p))
             rows = [dict(r) for r in cur.fetchall()]
+            # Convert datetime to string for JSON serialization
+            for r in rows:
+                if r.get('completed_at'):
+                    r['completed_at'] = r['completed_at'].isoformat()
+                    if 'Z' not in r['completed_at'] and '+' not in r['completed_at']:
+                        r['completed_at'] += 'Z'
         finally:
             cur.close()
             conn.close()

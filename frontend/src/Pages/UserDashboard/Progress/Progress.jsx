@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import ProgressChart from './ProgressChart';
-import ErrorSection from './ErrorSection';
+import WorkoutHistory from './WorkoutHistory';
 
 const Progress = ({ currentData, user_id }) => {
     const containerVariants = {
@@ -63,9 +63,9 @@ const Progress = ({ currentData, user_id }) => {
                 </motion.div>
             </div>
 
-            {/* Workout Errors Section */}
+            {/* Workout History Section */}
             <motion.div variants={itemVariants}>
-                <ErrorSection errorsByWorkout={currentData.errorsByWorkout} />
+                <WorkoutHistory history={currentData.history} />
             </motion.div>
         </motion.div>
     );
