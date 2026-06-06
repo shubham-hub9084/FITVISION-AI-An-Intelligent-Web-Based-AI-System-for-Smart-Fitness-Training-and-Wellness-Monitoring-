@@ -5,7 +5,6 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 
 const Workouts = () => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState("all");
   const [activeWorkoutId, setActiveWorkoutId] = useState(null);
 
   useEffect(() => {
@@ -102,22 +101,7 @@ const Workouts = () => {
     }
   ];
 
-  const filteredWorkouts = workoutPrograms.filter((workout) => {
-    return selectedDifficulty === "all" || workout.difficulty === selectedDifficulty;
-  });
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "beginner":
-        return "bg-green-100 text-green-700";
-      case "intermediate":
-        return "bg-yellow-100 text-yellow-700";
-      case "advanced":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
 
   const getColorClasses = (color) => {
     const map = {
@@ -177,18 +161,15 @@ const Workouts = () => {
 
 
 
-        {/* Workout Cards */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {filteredWorkouts.length === 4
-                ? "4 AI-Powered Workouts"
-                : `${filteredWorkouts.length} Workout${filteredWorkouts.length !== 1 ? "s" : ""} Available`}
+              {workoutPrograms.length} AI-Powered Workouts
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-            {filteredWorkouts.map((workout, index) => {
+            {workoutPrograms.map((workout, index) => {
               const c = getColorClasses(workout.color);
               return (
                 <div
@@ -197,7 +178,6 @@ const Workouts = () => {
                   data-aos="fade-up"
                   data-aos-delay={index * 80}
                 >
-                  {/* Image */}
                   <div className="relative w-full aspect-video overflow-hidden bg-gray-100 dark:bg-slate-700">
                     <img
                       src={workout.image}
@@ -206,16 +186,10 @@ const Workouts = () => {
                     />
                   </div>
 
-                  {/* Card Body */}
                   <div className="p-5 flex flex-col flex-1">
-
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{workout.title}</h3>
                     <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 flex-1">{workout.description}</p>
 
-
-
-
-                    {/* CTA */}
                     <button
                       onClick={() => setActiveWorkoutId(workout.exerciseId)}
                       className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white py-3 rounded-xl font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 shadow-sm shadow-emerald-200 dark:shadow-emerald-900/30"
@@ -228,22 +202,6 @@ const Workouts = () => {
               );
             })}
           </div>
-
-          {filteredWorkouts.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-search-line text-gray-400 text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No workouts match this level</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">Try "All Levels" to see all available exercises.</p>
-              <button
-                onClick={() => setSelectedDifficulty("all")}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-colors cursor-pointer"
-              >
-                Show All Levels
-              </button>
-            </div>
-          )}
         </div>
 
 

@@ -52,7 +52,6 @@ const App = () => {
             <Routes location={location} key={location.pathname}>
               <Route path='/' element={<HomePage />} />
 
-              {/* ✅ Protected Routes wrapped in Layout */}
               <Route element={<Layout />}>
                 <Route
                   path='/dashboard'

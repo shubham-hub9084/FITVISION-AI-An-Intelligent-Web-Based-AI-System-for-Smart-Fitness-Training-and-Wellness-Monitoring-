@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Link as ScrollLink } from "react-scroll";
 import Logo from './Logo';
 import { useAuth } from "../context/AuthContext";
@@ -13,7 +13,6 @@ const Navbar = () => {
     const { user, logout, login } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
-    // Close mobile menu when route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
     }, [location]);
@@ -25,7 +24,6 @@ const Navbar = () => {
 
     const isHomePage = location.pathname === '/';
 
-    // Links for the Landing Page (Scroll)
     const landingLinks = [
         { name: "Home", to: "home", type: "scroll" },
         { name: "Features", to: "features", type: "scroll" },
@@ -34,7 +32,6 @@ const Navbar = () => {
         { name: "Contact", to: "contact", type: "scroll" },
     ];
 
-    // Links for the App/Dashboard (Router)
     const appLinks = [
         { name: "Dashboard", path: "/dashboard" },
         { name: "Workouts", path: "/workouts" },
@@ -47,15 +44,12 @@ const Navbar = () => {
         <nav className="fixed top-0 w-full z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-slate-800 transition-all duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
                     <div className="flex items-center">
                         <Logo to="/" className="text-slate-900 dark:text-white" />
                     </div>
 
-                    {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center space-x-1">
                         {isHomePage ? (
-                            // Landing Page Links (Scroll)
                             landingLinks.map((link) => (
                                 <ScrollLink
                                     key={link.to}
@@ -71,7 +65,6 @@ const Navbar = () => {
                                 </ScrollLink>
                             ))
                         ) : (
-                            // App Links (Router)
                             appLinks.map((link) => (
                                 <NavLink
                                     key={link.path}
@@ -89,9 +82,7 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    {/* Right Side Actions */}
                     <div className="flex items-center space-x-2 sm:space-x-4">
-                        {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
                             className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
@@ -100,7 +91,6 @@ const Navbar = () => {
                             {theme === 'dark' ? <i className="ri-sun-line text-xl text-yellow-400"></i> : <i className="ri-moon-line text-xl"></i>}
                         </button>
 
-                        {/* Show Dashboard Button if on Home Page and Logged In */}
                         {isHomePage && user && (
                             <button
                                 onClick={() => navigate("/dashboard")}
@@ -110,7 +100,6 @@ const Navbar = () => {
                             </button>
                         )}
 
-                        {/* Sign In Button if NOT Logged In */}
                         {!user && (
                             <button
                                 onClick={() => login()}
@@ -120,8 +109,6 @@ const Navbar = () => {
                             </button>
                         )}
 
-
-                        {/* User Menu */}
                         {user && (
                             <div className="relative">
                                 <button
@@ -141,7 +128,6 @@ const Navbar = () => {
                                     )}
                                 </button>
 
-                                {/* Dropdown */}
                                 {isUserMenuOpen && (
                                     <>
                                         <div
@@ -195,7 +181,6 @@ const Navbar = () => {
                             </div>
                         )}
 
-                        {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="lg:hidden p-2 rounded-md text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-gray-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -206,13 +191,11 @@ const Navbar = () => {
                 </div>
             </div>
 
-            {/* Mobile Menu */}
             {isMobileMenuOpen && (
                 <div className="lg:hidden bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 shadow-lg absolute w-full left-0 z-40">
                     <div className="px-4 pt-2 pb-4 space-y-1">
                         {isHomePage ? (
                             <>
-                                {/* Logged in user dashboard link on home page mobile menu */}
                                 {user && (
                                     <button
                                         onClick={() => {

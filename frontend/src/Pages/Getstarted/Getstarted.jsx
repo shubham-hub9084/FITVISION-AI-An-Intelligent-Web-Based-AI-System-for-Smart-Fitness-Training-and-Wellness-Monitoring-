@@ -1,37 +1,40 @@
-import React from 'react'
-
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
-  const nav = useNavigate()
-  const { user, openSignUp, updateProfile } = useAuth()
+  const nav = useNavigate();
+  const { user, openSignUp, updateProfile } = useAuth();
+  const [selectedWorkouts, setSelectedWorkouts] = useState([]);
+
+  const toggleWorkout = (id) => {
+    setSelectedWorkouts(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
 
   const handleStartTraining = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    // Collect form data
     const formData = new FormData(e.target);
     const data = {
       workoutTypes: formData.getAll('workoutTypes'),
     };
 
-    // Save to profile
     if (user) {
       await updateProfile(data);
     }
 
-    nav("/dashboard")
-    setShowGetStartedModal(false)
-  }
+    nav("/dashboard");
+    setShowGetStartedModal(false);
+  };
 
   const handleSignIn = () => {
     openSignUp(); 
-  }
+  };
 
   return (
     <div>
-      {/* Get Started Modal */}
       {showGetStartedModal && (
         <div className="fixed inset-0 bg-slate-950/60 flex items-center justify-center z-[100] p-4 backdrop-blur-md transition-all duration-500">
           <div 
@@ -112,21 +115,42 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
                       { id: 'pushup', label: 'Push-ups', icon: 'ri-arrow-down-circle-line', desc: 'Chest & Triceps' },
                       { id: 'curl', label: 'Bicep Curls', icon: 'ri-boxing-line', desc: 'Biceps' },
                       { id: 'shoulder_press', label: 'Shoulder Press', icon: 'ri-arrow-up-circle-line', desc: 'Shoulders' }
-                    ].map((type) => (
-                      <label 
-                        key={type.id} 
-                        className="group relative flex items-center p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl cursor-pointer border-2 border-transparent hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-400/5 transition-all duration-300"
-                      >
-                        <input type="checkbox" name="workoutTypes" value={type.id} className="peer hidden" aria-label={type.label} />
-                        <div className="flex-1">
-                          <div className="font-bold text-gray-900 dark:text-white">{type.label}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{type.desc}</div>
-                        </div>
-                        <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600 flex items-center justify-center peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-all">
-                          <i className="ri-check-line text-white text-sm scale-0 peer-checked:scale-100 transition-transform"></i>
-                        </div>
-                      </label>
-                    ))}
+                    ].map((type) => {
+                      const isChecked = selectedWorkouts.includes(type.id);
+                      return (
+                        <label 
+                          key={type.id} 
+                          className={`group relative flex items-center p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl cursor-pointer border-2 transition-all duration-300 ${
+                            isChecked 
+                              ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-400/10' 
+                              : 'border-transparent hover:border-emerald-500/30 hover:bg-emerald-50/30'
+                          }`}
+                        >
+                          <input 
+                            type="checkbox" 
+                            name="workoutTypes" 
+                            value={type.id} 
+                            checked={isChecked}
+                            onChange={() => toggleWorkout(type.id)}
+                            className="hidden" 
+                            aria-label={type.label}
+                          />
+                          <div className="flex-1">
+                            <div className="font-bold text-gray-900 dark:text-white">{type.label}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{type.desc}</div>
+                          </div>
+                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                            isChecked 
+                              ? 'bg-emerald-600 border-emerald-600' 
+                              : 'border-gray-300 dark:border-slate-600'
+                          }`}>
+                            <i className={`ri-check-line text-white text-sm transition-transform duration-200 ${
+                              isChecked ? 'scale-100' : 'scale-0'
+                            }`}></i>
+                          </div>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -159,8 +183,7 @@ const Getstarted = ({ showGetStartedModal, setShowGetStartedModal }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-
-export default Getstarted
+export default Getstarted;

@@ -12,6 +12,13 @@ import {
 } from 'recharts';
 import config from '../../../config';
 
+const chartConfig = [
+    { key: 'Squats', color: '#6366f1', gradientId: 'colorSquats' },
+    { key: 'Push-ups', color: '#10b981', gradientId: 'colorPushups' },
+    { key: 'Bicep Curls', color: '#f59e0b', gradientId: 'colorCurls' },
+    { key: 'Shoulder Press', color: '#ec4899', gradientId: 'colorPress' }
+];
+
 const ProgressChart = ({ user_id }) => {
     const [data, setData] = useState([]);
     const days = 7; 
@@ -81,13 +88,7 @@ const ProgressChart = ({ user_id }) => {
         return () => clearInterval(interval);
     }, [user_id]);
 
-    // Premium SaaS Color Config (Linear/Stripe inspired)
-    const chartConfig = [
-        { key: 'Squats', color: '#6366f1', gradientId: 'colorSquats' },     // Indigo
-        { key: 'Push-ups', color: '#10b981', gradientId: 'colorPushups' }, // Emerald
-        { key: 'Bicep Curls', color: '#f59e0b', gradientId: 'colorCurls' }, // Amber
-        { key: 'Shoulder Press', color: '#ec4899', gradientId: 'colorPress' } // Pink/Rose
-    ];
+
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {

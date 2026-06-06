@@ -8,6 +8,24 @@ import { calculateStats, generateWeeklyPlan } from '../../utils/mealPlanGenerato
 import { downloadMealPlanAsPDF } from '../../utils/mealPlanPDF';
 import BackButton from '../../components/BackButton';
 
+const goalStyles = {
+  blue: {
+    border: 'border-blue-500 bg-blue-50 dark:bg-blue-900/20',
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-600 dark:text-blue-400'
+  },
+  emerald: {
+    border: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20',
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    text: 'text-emerald-600 dark:text-emerald-400'
+  },
+  orange: {
+    border: 'border-orange-500 bg-orange-50 dark:bg-orange-900/20',
+    bg: 'bg-orange-100 dark:bg-orange-900/30',
+    text: 'text-orange-600 dark:text-orange-400'
+  }
+};
+
 const createInitialFormData = () => ({
   goal: '',
   name: '',
@@ -235,19 +253,27 @@ const MealPlans = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sm:p-8 transition-colors duration-300" data-aos="fade-up">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Step 1: What's Your Goal?</h2>
             <div className="grid sm:grid-cols-3 gap-4">
-              {GOALS.map((goal) => (
-                <button
-                  key={goal.id}
-                  onClick={() => handleInputChange('goal', goal.id)}
-                  className={`p-6 rounded-xl border-2 transition-all text-left ${formData.goal === goal.id ? `border-${goal.color}-500 bg-${goal.color}-50 dark:bg-${goal.color}-900/20` : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'}`}
-                >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-${goal.color}-100 dark:bg-${goal.color}-900/30`}>
-                    <i className={`${goal.icon} text-xl text-${goal.color}-600 dark:text-${goal.color}-400`}></i>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{goal.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{goal.description}</p>
-                </button>
-              ))}
+              {GOALS.map((goal) => {
+                const styles = goalStyles[goal.color] || goalStyles.emerald;
+                const isSelected = formData.goal === goal.id;
+                return (
+                  <button
+                    key={goal.id}
+                    onClick={() => handleInputChange('goal', goal.id)}
+                    className={`p-6 rounded-xl border-2 transition-all text-left ${
+                      isSelected 
+                        ? styles.border 
+                        : 'border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600'
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${styles.bg}`}>
+                      <i className={`${goal.icon} text-xl ${styles.text}`}></i>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{goal.name}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{goal.description}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

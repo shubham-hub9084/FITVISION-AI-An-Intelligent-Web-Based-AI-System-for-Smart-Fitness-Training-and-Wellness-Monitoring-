@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-// Initialize the API only if the key exists
 let genAI = null;
 let model = null;
 
@@ -13,11 +12,10 @@ if (API_KEY) {
 
 export const getGeminiResponse = async (message) => {
   if (!API_KEY || !model) {
-    // Mock response for testing/demo purposes when no API key is provided
-    console.warn("No API key found, returning mock response.");
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
+    console.warn("No Gemini API key configured, using mock response.");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     return {
-      text: "I am a FitVision AI Assistant (Mock). Please add your Google Gemini API key to the .env file to enable real AI responses. I can help you with workout plans, diet tips, and form correction advice!",
+      text: "I am a FitVision AI Assistant. Please add VITE_GEMINI_API_KEY to your configuration to enable live AI responses. I can help you with workouts, diet plans, and exercise form advice!",
     };
   }
 
